@@ -19,13 +19,12 @@ SNDATA_ROOT=/data2/programs/SNANA/SNDATA_ROOT		# $SNDATA ROOT
 export PATH=${PATH}:$SNANA_DIR/bin
 export PATH=${PATH}:$SNANA_DIR/util
 
-
+# may run in terminal (be used for only one time at installation), rather be better to change options in Makefile lines
 # Prerequisted programs : CFITSIO, GSL and libncurses	
 export CERN_DIR=/usr/lib64/cernlib/2006
 export ROOT_DIR=/usr/lib64/root
 export CFITSIO_DIR= /usr/include/cfitsio
-#export GSL_DIR= /usr/include/gsl
-export PATH=${PATH}:$CERN_DIR/bin
+export GSL_DIR= /usr/include/gsl
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$CERN_DIR/lib
 
 # root libCint -lCint error :
