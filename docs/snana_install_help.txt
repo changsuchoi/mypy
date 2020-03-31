@@ -1,10 +1,16 @@
 #SNANA install fedora 31
 
+Download SNANA 
+https://github.com/RickKessler/SNANA
+Download SNDATA_ROOT
+http://snana.uchicago.edu/downloads.php
+
+
 # sudo dnf install root-hbook
 $ dnf copr enable musinsky/cernlib
 $ dnf install cernlib-utils geant321 paw-gfortran
 # this will also install: cernlib cernlib-devel cernlib-static
-
+# https://copr.fedorainfracloud.org/coprs/musinsky/cernlib/
 
 #vi .bashrc
 	##SNANA install
@@ -22,26 +28,12 @@ export CFITSIO_DIR= /usr/include/cfitsio
 export PATH=${PATH}:$CERN_DIR/bin
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$CERN_DIR/lib
 
+# root libCint -lCint error :
 
-#gsl library
-#compile gsl 
-gsl-latest.tar.gz
-gsl-1.16:
-
-./configure
-make 
-make install
+sudo ln -s /usr/lib64/root/libCore.so.6.18.04 /usr/lib64/root/libCint.so
 
 
-default library directroy check
-
-[changsu@localhost gsl-1.16]$ ls /usr/local/lib
-libgsl.a        libgslcblas.so        libgsl.la    libgsl.so.0.17.0
-libgslcblas.a   libgslcblas.so.0      libgsl.so    pkgconfig
-libgslcblas.la  libgslcblas.so.0.0.0  libgsl.so.0
-
-
-and edit Makefile of /data2/programs/SNANA/SNANA_v10_39h/src/Makefile
+and edit Makefile $SNANA_DIR/src/Makefile
 
 # --------------------------------------------------
 # define locations of libraries 
