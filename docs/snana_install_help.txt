@@ -1,0 +1,78 @@
+#SNANA install
+
+#vi .bashrc
+	##SNANA install
+	SNANA_DIR=/data2/programs/SNANA/SNANA_v10_39g		# $SNANA DIR 
+	SNDATA_ROOT=/data2/programs/SNANA/SNDATA_ROOT		# $SNDATA ROOT
+	export PATH=${PATH}:$SNANA_DIR/bin
+	export PATH=${PATH}:$SNANA_DIR/util
+
+
+# Prerequisted programs : CFITSIO, GSL and libncurses	
+export CERN_DIR=/usr/lib64/cernlib/2006
+export ROOT_DIR=/usr/lib64/root
+export CFITSIO_DIR= /usr/include/cfitsio
+#export GSL_DIR= /usr/include/gsl
+export PATH=${PATH}:$CERN_DIR/bin
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$CERN_DIR/lib
+
+
+#gsl library
+#compile gsl 
+gsl-latest.tar.gz
+gsl-1.16:
+
+./configure
+make 
+make install
+
+
+default library directroy check
+
+[changsu@localhost gsl-1.16]$ ls /usr/local/lib
+libgsl.a        libgslcblas.so        libgsl.la    libgsl.so.0.17.0
+libgslcblas.a   libgslcblas.so.0      libgsl.so    pkgconfig
+libgslcblas.la  libgslcblas.so.0.0.0  libgsl.so.0
+
+
+and edit Makefile of /data2/programs/SNANA/SNANA_v10_39h/src/Makefile
+
+# --------------------------------------------------
+# define libraries
+
+
+# xxx mark for deletion Feb 2015:  LMINUIT = -L$(MINUIT_DIR)/$(LIB_SDIR) -lminuit
+
+  LGSL    =  /usr/local/lib/libgsl.a /usr/local/lib/libgslcblas.a                #$(GSL_DIR)/$(LIB_SDIR)/libgsl.a  \
+#	         /usr/local/lib/libgslcblas.a                    #$(GSL_DIR)/$(LIB_SDIR)/libgslcblas.a
+  IGSL    =  -I/usr/include/gsl                       #$(GSL_DIR)/include
+
+  LCFITSIO =  -L/usr/lib64 -lcfitsio                  # $(CFITSIO_DIR)/$(LIB_SDIR) -lcfitsio
+  ICFITSIO =  -I/usr/include/cfitsio                  #/$(CFITSIO_DIR)/include
+
+
+
+
+
+> cd $SOFTDIR/SNANA
+> tar xzf snana_v7_07.tar.gz
+> cd snana_v7_07/src
+
+To compile with hbook,
+* in Makefile set USE_HBOOK = 1
+* in sntools_output.h set #define HBOOK
+
+To compile with root,
+* in Makefile set USE_ROOT = 1
+* in sntools_output.h set #define ROOT
+
+To remove hbook from compilation,
+* in Makefile set USE_HBOOK = 0
+* in sntools_output.h ’set #define HBOOKxx’ or remove this line.
+
+To remove root from compilation,
+* in Makefile set USE_ROOT = 0
+* in sntools_output.h ’set #define ROOTxx’ or remove this line.
+
+> make
+(hold your breath ... )

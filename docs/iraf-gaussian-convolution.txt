@@ -1,0 +1,35 @@
+Hello Alina, There is a new package not yet available in the distributed iraf system which should address your problem.
+ The package is called immatch and is available as addon software from our ftp archive.
+  To retrieve and install immatch ftp to 140.252.1.1, login as anonymous, cd to iraf/extern, retrieve the file immatch.readme, and follow the enclosed installation instructions.
+The readme file also contains a reference to an ADASS paper which gives an overview of the software, and a brief description of the package tasks. In your case the immatch package task sequence might look like the following.
+
+1. for images which are misaligned by x and y shifts only
+a. run the xregister task to register the images spatially
+b. run the psfmatch task to match the psfs
+c. run the linmatch task to match intensity scales
+(this step may or may not be desirable depending on the project)
+
+2. for images which are misaligned in orientation and scale
+a. run the geomap and geotran tasks to register the images spatially
+b. run the psfmatch task to match the psfs
+c. run the linmatch task to match intensity scales
+(this step may or may not be desirable depending on the project)
+The psfmatch task does the psf matching using fourier techniques and the image data itself
+(e.g. a high signal-to-noise bright star in each image)
+or pre-computed psfs (e.g computed by the daophot psf / seepsf tasks)
+or by using a precomputed convolution kernel.
+In all cases psfmatch uses the lowest common denominator approach, i.e. the reference image should be the one with the poorest resolution and everything else it blurred to that resolution.
+
+The images should be registered spatially before psfmatch is used. Quick psf matching can also be done with existing iraf tasks as follows:
+
+1. determine the fwhm of the psf of your images with the imexamine task and select the one with the poorest resolution to be the reference image.
+2. assume that the psfs of all the images are gaussian (don't know how good this approximation really is but imexamine should tell you)
+3. use the gauss task to deblur everything to the resolution of the reference image by setting the sigma of the gaussian to be sigma(gaussian) ** 2 = sigma (ref image) ** 2 - sigma (image) ** 2for each image.
+
+I would encourage you to try one or both of these techniques. If
+you decide to use the immatch software be sure and let me know if you have
+any problems with or questions about the software, as your sort of problem
+is exactly what the software was designed to tackle.
+
+Best wishes,
+Lindsey Davis

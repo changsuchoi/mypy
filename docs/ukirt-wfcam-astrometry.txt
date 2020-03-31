@@ -1,0 +1,29 @@
+# iraf - fitsutil - fxsplit
+
+ from : w20181119_00867_sf.fit*
+ w20181119_00867_sf0.fit : header
+ w20181119_00867_sf1.fit
+ w20181119_00867_sf2.fit
+ w20181119_00867_sf3.fit
+ w20181119_00867_sf4.fit
+ 
+# read each file in python 
+hdu=fits.open('w20181119_00867_sf1.fit',do_not_scale_image_data=True)
+'''
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU       6   ()      
+  1                1 CompImageHDU     90   (4103, 4103)   int32   
+'''
+image=hdu[1]
+data,hdr=image.data,image.header
+fits.writeto('new.fits',data, hdr, overwrite=True)
+
+# run scamp on 'new.fits'
+
+% BITPIX trouble : file size gets bigger
+% hanging scamp matching ***.cat process ....
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# for astrometry.net
+# remove cards in header containing empty value
+ 

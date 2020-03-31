@@ -1,0 +1,84 @@
+PFC Focus Mode (test focus) Methodology
+
+Focus mode makes a user specified sequence of focus images on a single image frame. Set the required image sub-frame with detpars, and the parameters shown below with obspars. Make the observation with the command "test" (or "observe") and respond to the prompt for the image type with "focus".
+
+(foctype=           instrument) Type of focus to use
+nfexpo  =                    7  Number of focus exposures
+shtype  =             detector  Shift type
+focmode =                 auto  Focus mode
+fstart  =                @-600  Starting focus value
+fdelta  =                 +200  Focus increment
+nrvrows =                   20  Number of rows to reverse shift
+Then, with the parameters shown above as an example, an image frame will be taken with (nfexpo=) 7 images of each object. The first six images will be separated by (nrvrows=) 20 rows and the 7th image will be (2 x nrvrows=) 40 rows from the 6th image to mark the end of the sequence. The focus setting for the first image is @-600 (from fstart) and the focus is changed by +200 (from fdelta) for each subsequent image. That is, the 7 images of each star have focus values of @-600, @-400, @-200, @0, @200, @400, and @600. Use an IRAF tool such as imexamine to determine the FWHM for the stars in several sequences to determine the best focus.
+
+The parameters "fstart" and "fdelta" are focus control language commands that are issued to instrpars.instrfocus. In practice, "fstart" will be one of "@n", "+n", or "-n", and "fdelta" will be one of "+n" and "-n". If "nrvrows" is negative, the shift between integrations is a forward rather than reverse shift.
+
+N.B. after a focus frame is taken, the focus setting remains at that of the last integration in the sequence (@600 in the example). If that is not the desired setting, you must use instrpars to set the focus to the desired setting.
+
+Tip: choose a focus field away from the galactic plane to avoid crowding.
+
+---------------------------------------------------------------------------------------------
+
+If you have not already done so, constrain the detector read area by the
+following procedure:
+With the cursor in the ICEX window type "detp" and enter "800" in
+the "firstro=" parameter line and "1200" in the "lastrow=" parameter
+line. Save the detector parameters.
+This will reduce the time required to read out the detector during the
+focusing procedure.
+To start the focus procedure, in the 'icex' window type "instrp" and enter "h"
+in the "instrfo=" parameter line to home (zero) the focus offset and start the
+focus servo system. Save the parameters with Ctrl-d, then type "instru".
+Note that all focus adjustments are made in a relative sense, hence this first
+step sets a zero position at the start of the focus sequence.
+Type "test" and select the focus option. A 10 second integration is
+usually sufficient for focusing. The focus routine generates seven separate
+images for each star. The usual focus offset values are set to -900, -600,
+-300, 0, 300, 600, 900. This is accomplished in obspars with values
+of nfexpo=7, fstart = "@-900", fdelta = "+300". In the resulting
+focus image in the 'ximtool' or 'ds9' window, the last star image (for +900) is
+separated from the rest of the sequence.
+
+-------------------------------------------------------------------------------------------------
+
+A VERY IMPORTANT LAST STEP: edit "instrp" again, enter "h" in the
+"instrfo=" parameter line. This last step is very important, since it is "telling"
+ICE where the current best focus position is. All subsequent moves
+performed by ice, whether from filter change or temperature change, are
+made relative to this position.
+Very Important Summary of this Procesdure:
+The following command sequence illustrates the iterative process for
+focusing the instrument/detector:
+intrp->instrfocus->h
+instrument
+instrp->instrfocus->@[+/-]nsteps
+instrument
+instrp->instrfocus->hinstrument
+instrp->instrfocus->@[+/-]nsteps
+instrument
+instrp->instrfocus->h
+instrument
+...
+The autofocus mechanism must be turned 'on' (the initial instrp->instrfocus-
+>h + instrument command);
+The focus mechanism gets moved in the indicated direction (+ or – nsteps),
+(the instrp->instrfocus->@[+/-]nsteps + instrument command);
+Then the focus mechanism is 're-homed' at the new position (the instrp-
+>instrfocus->h + instrument command).
+The summary illustrates the iterative sequence of turning 'on' the autofocus
+mechanism, moving the focus mechanism some number of steps, and
+'homing' the focus mechanism after each move. This sequence is important,
+as missing or skipping a step leaves the autofocus mechanism in an
+indeterminate state, which will result in a dramatic, and difficult-to-correct
+out-of-focus condition.
+Generally, you will repeat this sequence several times. Type "test" to take
+another focus frame, and repeat until you are satisfied with the focus. (The
+best attainable focus with the PFC is 1.5 pixels.)
+If for any reason ICE stopped running (power outage, or hitting ^C), you
+need to log into ICE again and reinitialize the PFC. The filter is where it was
+before, you just have to tell it using instrp. You can also recover the focus by
+typing "l" in the instfo parameter line, use instru to implement it, then go
+again to instrp, type "h" on the instfo line, execute instru for starting auto-
+focusing.
+When finished with the calibration, focus and pointing exposures edit the
+detpar file to restore the default 1 st and last row values for the detector.

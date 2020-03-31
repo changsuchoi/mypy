@@ -1,0 +1,39 @@
+Lupton (2005)
+
+These equations that Robert Lupton derived by matching DR4 photometry to Peter Stetson's published photometry for stars.
+
+
+Stars
+
+   B = u - 0.8116*(u - g) + 0.1313;  sigma = 0.0095
+   B = g + 0.3130*(g - r) + 0.2271;  sigma = 0.0107
+
+   V = g - 0.2906*(u - g) + 0.0885;  sigma = 0.0129
+   V = g - 0.5784*(g - r) - 0.0038;  sigma = 0.0054
+
+   R = r - 0.1837*(g - r) - 0.0971;  sigma = 0.0106
+   R = r - 0.2936*(r - i) - 0.1439;  sigma = 0.0072
+
+   I = r - 1.2444*(r - i) - 0.3820;  sigma = 0.0078
+   I = i - 0.3780*(i - z)  -0.3974;  sigma = 0.0063
+
+Here is the CAS SQL query Robert used to perform the matchup of DR4 photometry with Stetson's:
+
+
+  select
+     dbo.fSDSS(P.objId) as ID, name,
+     S.B, S.Berr, S.V, S.Verr , S.R, S.Rerr, S.I, S.Ierr,
+     psfMag_u, psfMagErr_u, psfMag_g, psfMagErr_g,
+     psfMag_r, psfMagErr_r, psfMag_i, psfMagErr_i, psfMag_z, psfMagErr_z,
+     case when 0 = (flags_u & 0x800d00000000000) and status_u = 0 then 1 else 0 end as good_u,
+     case when 0 = (flags_g & 0x800d00000000000) and status_g = 0 then 1 else 0 end as good_g,
+     case when 0 = (flags_r & 0x800d00000000000) and status_r = 0 then 1 else 0 end as good_r,
+     case when 0 = (flags_i & 0x800d00000000000) and status_i = 0 then 1 else 0 end as good_i,
+     case when 0 = (flags_z & 0x800d00000000000) and status_z = 0 then 1 else 0 end as good_z
+  from
+     stetson as S
+  join star as P on S.objId = P.objId
+  join field as F on P.fieldId = F.fieldId
+  where
+     0 = (flags & 0x40006)
+

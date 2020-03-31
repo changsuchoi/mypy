@@ -1,0 +1,172 @@
+noao
+imred
+ccdred
+
+!gethead obj*.fits FILTER EXP_TIME 
+
+ls zero.2x2.* > zero.list
+ls dark.2x2.* > dark.list
+ls ?f.2x2.* > flat.list
+ls obj.* > obj.list
+
+
+
+zerocom @zero.list output=zero.fits combine=median reject=crreject ccdtype=''
+#	input   =           @zero.list  List of zero level images to combine
+#	(output =            zero.fits) Output zero level name
+#	(combine=               median) Type of combine operation
+#	(reject =             crreject) Type of rejection
+#	(ccdtype=                     ) CCD image type to combine
+
+darkcom @dark.list output=dark.fits combine=median reject=crreject ccdtype='' process-
+#	input   =           @dark.list  List of dark images to combine
+#	(output =            dark.fits) Output dark image root name
+#	(combine=               median) Type of combine operation
+#	(reject =             crreject) Type of rejection
+#	(ccdtype=                     ) CCD image type to combine
+#	(process=                   no) Process images before combining?
+#	(delete =                   no) Delete input images after combining?
+#	(clobber=                   no) Clobber existing output image?
+#	(scale  =                 none) Image scaling
+
+
+imarith @flat.list - zero.fits z@flat.list
+#imarith @obj.list - dark.fits d@obj.list
+imarith @obj.list - zero.fits d@obj.list
+hselect @flat.list $I "FILTER  = 'R104'" > rflat.list ;type rflat.list 
+hselect @flat.list $I "FILTER  = 'V103'" > vflat.list ;type vflat.list 
+hselect @flat.list $I "FILTER  = 'B102'" > bflat.list ;type bflat.list 
+hselect @flat.list $I "FILTER  = 'I105'" > iflat.list ;type iflat.list 
+hselect @flat.list $I "FILTER  = 'Z'" > zflat.list ;type zflat.list 
+hselect @flat.list $I "FILTER  = 'Y'" > yflat.list ;type yflat.list 
+
+flatcom z@bflat.list output=bflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+flatcom z@vflat.list output=vflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+flatcom z@rflat.list output=rflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+flatcom z@iflat.list output=iflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+flatcom z@zflat.list output=zflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+flatcom z@yflat.list output=yflat.fits combine=median reject=crreject ccdtype='' process- subset- scale=exposure
+
+#flatcom z@zflat.list output=zflat.fits combine=median reject=minmax ccdtype='' process- subset- scale=none
+#	input   =         z@rflat.list  List of flat field images to combine
+#	(output =           rflat.fits) Output flat field root name
+#	(combine=               median) Type of combine operation
+#	(reject =               minmax) Type of rejection
+#	(ccdtype=                     ) CCD image type to combine
+#	(process=                   no) Process images before combining?
+#	(subsets=                   no) Combine images by subset parameter?
+#	(delete =                   no) Delete input images after combining?
+#	(clobber=                   no) Clobber existing output image?
+#	(scale  =                 none) Image scaling
+
+imstat *flat.fits
+imstat bflat.fits field='mean' format- | scan(x)
+=x
+imarith bflat.fits / (x) nbflat.fits
+#imstat *flat.fits
+#               IMAGE      NPIX      MEAN    STDDEV       MIN       MAX
+#           iflat.fits   4194304    10311.     782.5   -65009.    24831.
+#           rflat.fits   4194304    15093.     1083.   -65129.    62414.
+
+#imarith bflat.fits / 28081 nbflat.fits
+#imarith vflat.fits / 11678 nvflat.fits
+#imarith rflat.fits / 7710 nrflat.fits
+#imarith iflat.fits / 4027 niflat.fits
+#imarith zflat.fits / 20695 nzflat.fits
+#imarith yflat.fits / 31741 nyflat.fits
+
+hselect @obj.list $I "FILTER  = 'B102'" > bobj.list ;type bobj.list 
+hselect @obj.list $I "FILTER  = 'R104'" > robj.list ;type robj.list 
+hselect @obj.list $I "FILTER  = 'V103'" > vobj.list ;type vobj.list 
+hselect @obj.list $I "FILTER  = 'I105'" > iobj.list ;type iobj.list 
+hselect @obj.list $I "FILTER  = 'Z'" > zobj.list ;type zobj.list 
+hselect @obj.list $I "FILTER  = 'Y'" > yobj.list ;type yobj.list 
+
+
+imarith d@robj.list / nrflat.fits fd@robj.list
+imarith d@zobj.list / nzflat.fits fd@zobj.list 
+imarith d@bobj.list / nbflat.fits fd@bobj.list
+imarith d@vobj.list / nvflat.fits fd@vobj.list 
+imarith d@iobj.list / niflat.fits fd@iobj.list
+imarith d@yobj.list / nyflat.fits fd@yobj.list 
+
+#ds9 - zoom - invert XY
+#cp zobj.list z.list
+#cp iobj.list i.list
+#cp yobj.list y.list
+#hselect fd@obj.list $I "FILTER  = 'I105'" > i.list ;type i.list 
+#hselect fd@obj.list $I "FILTER  = 'Z'" > z.list ;type z.list 
+#hselect fd@obj.list $I "FILTER  = 'Y'" > y.list ;type y.list 
+
+#dfringe_i.pro
+#dfringe_z.pro
+#dfringe_y.pro
+#56th line    fb   ->  fd
+#compile again and run
+
+
+#astrometry copy files like below
+#astrom.cl    astrom.nnw    astrom.scamp  astrom.swarp
+#astrom.conv  astrom.param  astrom.sex
+#check coordinates (RA,DEC)
+#16 52 52.86 +82 03 16.4 
+#253.33833, +82.04253
+
+#edit astrom.cl
+
+#cd matrix
+#coordinates
+#file name
+
+#wregister input_file ref_file output_file
+#wregister afdobj.iPTF14yb.20140227.0140.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0140.fits
+#wregister afdobj.iPTF14yb.20140227.0142.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0142.fits
+#wregister afdobj.iPTF14yb.20140227.0144.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0144.fits
+#wregister afdobj.iPTF14yb.20140227.0146.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0146.fits
+#wregister afdobj.iPTF14yb.20140227.0148.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0148.fits
+#wregister afdobj.iPTF14yb.20140227.0150.fits afdobj.iPTF14yb.20140227.0140.fits rafdobj.iPTF14yb.20140227.0150.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0141.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0141.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0143.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0143.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0145.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0145.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0147.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0147.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0149.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0149.fits
+#wregister afr_fdobj.iPTF14yb.20140227.0151.fits afdobj.iPTF14yb.20140227.0140.fits rafr_fdobj.iPTF14yb.20140227.0151.fits
+
+#ls rfdobj.GRB131002A.20131003.00* > frobj.list
+#ls rfr_fdobj.GRB131002A.20131003.00* > fiobj.list
+
+#image combination
+
+#imcom @frobj.list GRB131002A_R.fits combine=median reject=minmax scale=none zero=mode
+#imcom @fiobj.list GRB131002A_I.fits
+
+#input   =                       List of images to combine
+#output  =                       List of output images
+#(headers=                     ) List of header files (optional)
+#(bpmasks=                     ) List of bad pixel masks (optional)
+#(rejmask=                     ) List of rejection masks (optional)
+#(nrejmas=                     ) List of number rejected masks (optional)
+#(expmask=                     ) List of exposure masks (optional)
+#(sigmas =                     ) List of sigma images (optional)
+#(imcmb  =                   $I) Keyword for IMCMB keywords
+#(logfile=               STDOUT) Log file
+#?
+#(combine=               median) Type of combine operation
+#(reject =               minmax) Type of rejection
+#(project=                   no) Project highest dimension of input images?
+#(outtype=                 real) Output image pixel datatype
+#(outlimi=                     ) Output limits (x1 x2 y1 y2 ...)
+#(offsets=                 none) Input image offsets
+#(masktyp=                 none) Mask type
+#(maskval=                    0) Mask value
+#(blank  =                   0.) Value if there are no pixels
+
+#(scale  =                 none) Image scaling
+#(zero   =                 mode) Image zero point offset
+#(weight =                 none) Image weights
+#(statsec=                     ) Image section for computing statistics
+#(expname=                     ) Image header exposure time keyword
+
+
+
+

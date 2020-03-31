@@ -1,0 +1,50 @@
+
+
+remap is a utility for moving the pixels in a FITS or IRAF image with one world coordinate system (WCS) to another image of the same type with a different WCS. The WCS is the relationship between sky coordinates and image pixels and is described in a standard way in the header of an image. 
+
+
+filename 	Name of FITS or IRAF image file. This must be present.
+-a rotation angle 	Output WCS rotation angle in degrees. The defauklt is to use the same rotation angle as the input image.
+-b RA Dec 	Output center right ascension and declination in degrees or sexigesimal in B1950 (FK4). Sexigesimal coordinates are hours:minutes:seconds degrees:minutes:seconds. The default is to use the input center, using the values of the RA, DEC, and EPOCH keywords if there are no standard WCS keywords in the image header.
+-e long lat 	Output center in ecliptic longitude and latitude in degrees.
+-f FITS filename 	Use WCS from the header of this file. Other command line arguments can be used to override specific parameters. (Added in WCSTools 3.4.2)
+-g long lat 	Output center in galactic longitude and latitude in degrees.
+-i number 	Bits per pixel in output image as FITS BITPIX values; i.e. -64 and -32 are 8-byte and 4-byte floating point numbers, and 8, 16, and 32 are 1-byte, 2-byte, and 4-byte integers.
+-j RA Dec 	Output center right ascension and declination in degrees or sexigesimal in J2000 (FK5). Sexigesimal coordinates are hours:minutes:seconds degrees:minutes:seconds. The default is to use the input center, using the values of the RA, DEC, and EPOCH keywords if there are no standard WCS keywords in the image header.
+-l number 	Log every number rows of input image
+-n number 	Integer pixel value for output pixels not set from input image. The BLANK header keyword is set to this value. (Added in WCSTools 3.4.2)
+-o [filename] 	Write output to the file filename. The default is to write a file called remap.fits.
+-p plate scale 	Output plate scale in arcseconds per pixel. The default is to use the values of the SECPIX or SECPIX1 and SECPIX2 keywords in the image header). The default is to use the same plate scale as the input image WCS.
+-v 	print more information about processing
+-w projection code 	The WCS projection of the output image, such as TAN. This is the last 3/8ths of the output CTYPE1 and CTYPE2 keyword values. The default is to use the same projection type as the input image.
+The first five characters of these keywords are set based on the coordinate system:
+RA--- and DEC-- for -b (B1950) or -j (J2000),
+GLON- and GLAT- for -g (galactic), and
+ELON- and ELAT- for -e (ecliptic).
+-x Xref Yref 	Pixel coordinates of the reference pixel used in the output WCS projection The default is to translate the input reference pixel into the output system.
+-y Xdim Ydim 	horizontal and vertical dimensions of the output image. The default is to use the same as the input image. 
+
+REMAP WCSTools 3.9.1, 19 March 2015, Jessica Mink (jmink@cfa.harvard.edu)
+Remap FITS or IRAF images into single FITS image using WCS
+Usage: remap [-v][-f WCSfile][-a rot][[-b][-j] ra dec][-i bits][-l num] file1.fit file2.fit ... filen.fit
+  or : remap [-v][-f WCSfile][-a rot][[-b][-j] ra dec][-i bits][-l num] @filelist
+  -a: Output rotation angle in degrees (default 0)
+  -b ra dec: Output center in B1950 (FK4) RA and Dec
+  -e long lat: Output center in ecliptic longitude and latitude
+  -f file: Use WCS from this file as output WCS
+  -g long lat: Output center in galactic longitude and latitude
+  -i num: Number of bits per output pixel (default is input)
+  -j ra dec: center in J2000 (FK5) RA and Dec
+  -l num: Log every num rows of output image
+  -m mode: c closest pixel (more to come)
+  -n num: integer pixel value for blank pixel
+  -o name: Name for output image
+  -p secpix: Output plate scale in arcsec/pixel (default =input)
+  -s: Set BZERO and BSCALE in output file from input file
+  -t: Number of samples per linear output pixel
+  -u: Delete distortion keywords from output file
+  -v: Verbose
+  -w type: Output WCS type (input is default)
+  -x x y: Output image reference X and Y coordinates (default is center)
+  -y nx ny: Output image dimensions (default is first input image)
+

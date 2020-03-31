@@ -1,0 +1,581 @@
+http://www.ing.iac.es/Astronomy/tonotes/misc/image_red1.html
+
+
+CCD Reduction of Broad Band Images
+
+
+This course describes the basic steps in preparing (reducing) CCD images in
+the broad band filters V and I
+for creating a colour differnce map (V-I) of the Seyfert 1 galaxy NGC5033.
+We will use both the IRAF and STARLINK packages running on the SunOS/Solaris
+machines at ING.
+The IRAF packages noao, imred and ccdred should be loaded
+first. For the exercise we used my account (mwa) on lpss20. I have placed
+the data on dat tape which is kept in the TO office (WHT). This is a tarfile
+of images in fits format comprising of V and I sky flats and object frames
+also in V and I. To extract just do a 'tar xvf /dev/nrst1' on either
+lpss1 or lpss2 after finding scratch space on those machines
+(put the tape in first!).
+If IRAF is used for the first time on an account run 'mkiraf'. Now start
+'xgterm -sb &' (-sb to get a scroll bar) and 'ximtool &' or 'saotng &' at sea
+level, then start IRAF in the xgterm (cl). 
+
+
+Getting started
+
+First of all we have to read the fits files and convert them to IRAF
+format. We use 'list_fit' and 'list_imh" to define the fits data source
+and the IRAF filename to be given. They are simple text files containing
+the names of the files with one name per line. The fits files you find
+in the 'fit' directory, first you have to copy it into your working
+directory. You may use 'list_fit' as a template when creating 'list_imh'
+using EMACS, selecting edit, query replace.
+
+cc> lparam rfits
+    fits_file = "@list_fit"     FITS data source
+    file_list =                 File list
+    iraf_file = "@list_imh"     IRAF filename
+  (make_image = yes)            Create an IRAF image?
+ (long_header = no)             Print FITS header cards?
+(short_header = yes)            Print short header?
+    (datatype = "")             IRAF data type
+       (blank = 0.)             Blank value
+       (scale = yes)            Scale the data?
+ (oldirafname = no)             Use old IRAF name in place of iraf_file?
+      (offset = 0)              Tape file offset
+        (mode = "ql")           
+
+If reading fits files from a tape (i.e. NOT A TARFILE), enter IRAF device
+name for drive (mtc for mountain top on lpss1 and lpss2 or sllx01!mtdat1
+for drive in 5th floor attached to sllx01. So 'fits_file' becomes name of
+drive for data source.
+ 
+cc> rfits
+
+Now you can save disk space by discarding the redundant fits files.
+cc> !rm *.fit
+
+What we need
+
+The aim of the excercise is to obtain a V-I image of NGC5033. We need:
+
+1. Biases (in case there is structure).
+2. Flat fields in V and I. At least 3 of each for median filtering.
+3. The object (NGC5033) images in V and I.
+When using ccdproc below, make sure the files you need are in the list to
+be processed (in this case, the flat fields and object in V and I).
+
+Combining the bias frames: zerocombine
+
+In principal the first stage of the process is to prepare the bias frames
+for use.
+Display a bias and check for structure, if there is none you don't need
+zerocombine! You will see there is no structure, hence zerocombine isn't
+needed.
+Also, bias frames can tell you if there are any offsets between overscan 
+and the 'real' bias level. However, the bias level can change during 
+night so one has to be careful intepretating these values.
+
+Observers should check for structure taking a bias. If there is, they will
+take many (at least 25, so they are not dominated by readout noise)
+``zero second'' exposures which need to be combined into a single image,
+hence the current task zerocombine.
+
+In the example below, 'list_bias' is a text file containing the names of the
+bias frames to be combined with one name per line of the file. If there are
+very few such frames, you can give zerocombine the image names directly via
+eparam. The output is a single image called 'biascomb'. Most parameters can
+safely be left at default values; however ccdtype needs to be set to `` '',
+since in general, the image type is not specified correctly in the image
+header. The image type needs to be correct for the next stage, so correct it
+if necessary (use hedit to set the ``imagetyp'' of biascomb to ``zero'').
+
+cc> lparam zerocombine
+        input = @list_bias      List of zero level images to combine
+      (output = "biascomb")     Output zero level name
+     (combine = "average")      Type of combine operation
+      (reject = "minmax")       Type of rejection
+     (ccdtype = "")             CCD image type to combine
+     (process = no)             Process images before combining?
+      (delete = no)             Delete input images after combining?
+     (clobber = no)             Clobber existing output image?
+       (scale = "none")         Image scaling
+     (statsec = "")             Image section for computing statistics
+        (nlow = 0)              minmax: Number of low pixels to reject
+       (nhigh = 1)              minmax: Number of high pixels to reject
+       (nkeep = 1)              Minimum to keep (pos) or maximum to reject (neg
+       (mclip = yes)            Use median in sigma clipping algorithms?
+      (lsigma = 3.)             Lower sigma clipping factor
+      (hsigma = 3.)             Upper sigma clipping factor
+     (rdnoise = "0.")           ccdclip: CCD readout noise (electrons)
+        (gain = "1.")           ccdclip: CCD gain (electrons/DN)
+      (snoise = "0.")           ccdclip: Sensitivity noise (fraction)
+       (pclip = -0.5)           pclip: Percentile clipping parameter
+       (blank = 0.)             Value if there are no pixels
+        (mode = "ql")
+
+cc> zerocombine
+cc> hedit biascomb imagetype "zero"
+
+As mentioned above zerocombine isn't needed for our data reduction, we
+continue therefore without using the result 'biascomb'.
+
+
+Subtracting bias level and trimming
+
+We use the task 'ccdproc', this task incorporates a veritable host of minor
+functions, all combined into the one easy-to-use task. We will use 'ccdproc'
+later again. Now we use it for subtracting the average over the columns in
+the overscan region (to remove any frame-to-frame variations in the average
+zero level). A fit (generally a constant) is performed on the overscan region
+of each image as a function of line number and is then subtracted from all
+columns of the data part of the image.
+After subtraction of the overscan region the image is trimmed to leave just
+the part containing useful data.
+It is necessary to specify the portions of the image containing data and the
+overscan with the parameters biassec and trimsec; these may be determined by
+inspection with a task such as implot. The format for biassec and trimsec
+is: [start column:end column,start line:end line]. Also for the CCD being
+used, the biasec and trimsec are documented along with other characteristics.
+
+To find out how to use 'implot' examine the help page. Then determine the
+values for biassec and trimsec.
+
+cc> help implot
+cc> implot bias1
+
+Some example values for biassec and trimsec are included in the parameter
+listing below. These serve as an approximation, but you should check (with
+implot) to be sure.
+
+The ccdproc task can also correct bad pixels by interpolation (if
+fixpix=yes) in this case a file listing known bad pixels for the CCD used
+is required.
+
+There are quite a few other things ccdproc can do, we will see more later on.
+
+cc> lparam ccdproc
+       images = "@list_imh"     List of CCD images to correct
+     (ccdtype = " ")            CCD image type to correct
+   (max_cache = 0)              Maximum image caching memory (in Mbytes)
+      (noproc = no)             List processing steps only?\n
+      (fixpix = no)             Fix bad CCD lines and columns?
+    (overscan = yes)            Apply overscan strip correction?
+        (trim = yes)            Trim the image?
+     (zerocor = no)             Apply zero level correction?
+     (darkcor = no)             Apply dark count correction?
+     (flatcor = no)             Apply flat field correction?
+    (illumcor = no)             Apply illumination correction?
+   (fringecor = no)             Apply fringe correction?
+     (readcor = no)             Convert zero level image to readout correctio?
+     (scancor = no)             Convert flat field image to scan correction?\n
+    (readaxis = "line")         Read out axis (column|line)
+     (fixfile = "")             File describing the bad lines and columns
+     (biassec = "[11:40,*]")     Overscan strip image section
+     (trimsec = "[51:1075,*]")  Trim data section
+        (zero = "")             Zero level calibration image
+        (dark = "")             Dark count calibration image
+        (flat = "")             Flat field images
+       (illum = "")             Illumination correction images
+      (fringe = "")             Fringe correction images
+  (minreplace = 1.)             Minimum flat field value
+    (scantype = "shortscan")    Scan type (shortscan|longscan)
+       (nscan = 1)              Number of short scan lines\n
+ (interactive = no)             Fit overscan interactively?
+    (function = "legendre")     Fitting function
+       (order = 1)              Number of polynomial terms or spline pieces
+      (sample = "*")            Sample points to fit
+    (naverage = 1)              Number of sample points to combine
+    (niterate = 1)              Number of rejection iterations
+  (low_reject = 3.)             Low sigma rejection factor
+ (high_reject = 3.)             High sigma rejection factor
+        (grow = 0.)             Rejection growing radius
+        (mode = "ql")           
+
+
+Combining the flat field frames: flatcombine (or imcombine)
+
+A second type of calibration frame is the flat field frame. A flat field is
+an image of a uniform intensity distribution, e.g. the dome flat-field
+screen or the twilight sky, (the latter is to be preferred). This is used to
+determine and correct for the relative instrumental and detector response
+(the so called pixel-to-pixel variations).
+flatcombine combines any number of frames in similar fashion to zerocombine,
+the ouput file in this example being called 'Flatv' for the V filter or
+'Flati' for the I filter. There
+is one important difference though. Since the exposure time is non-zero,
+there will inevitably be cosmic ray events or tracks (CREs) on the image.
+flatcombine uses an algorithm to weed these out. Note that median uses the
+average of the two central values when the number of pixels is even. However,
+as we shall see later, it is not possible to get rid of ALL the cosmics.
+
+cc> lparam flatcombine
+        input = "@inflatv"      List of images to combine
+       output = "Flatv"         List of output images
+      (plfile = "")             List of output pixel list files (optional)
+       (sigma = "")             List of sigma images (optional)
+     (logfile = "flatcomb.log") Log file\n
+     (combine = "median")       Type of combine operation
+      (reject = "none")         Type of rejection
+     (project = no)             Project highest dimension of input images?
+     (outtype = "real")         Output image pixel datatype
+     (offsets = "none")         Input image offsets
+    (masktype = "none")         Mask type
+   (maskvalue = 0.)             Mask value
+       (blank = 0.)             Value if there are no pixels\n
+       (scale = "none")         Image scaling
+        (zero = "none")         Image zero point offset
+      (weight = "none")         Image weights
+     (statsec = "")             Image section for computing statistics
+     (expname = "")             Image header exposure time keyword\n
+  (lthreshold = INDEF)          Lower threshold
+  (hthreshold = INDEF)          Upper threshold
+        (nlow = 1)              minmax: Number of low pixels to reject
+       (nhigh = 1)              minmax: Number of high pixels to reject
+       (nkeep = 1)              Minimum to keep (pos) or maximum to reject (neg       (mclip = yes)            Use median in sigma clipping algorithms?
+      (lsigma = 3.)             Lower sigma clipping factor
+      (hsigma = 3.)             Upper sigma clipping factor
+     (rdnoise = "4.55")           ccdclip: CCD readout noise (electrons)
+        (gain = "0.69")           ccdclip: CCD gain (electrons/DN)
+      (snoise = "0.")           ccdclip: Sensitivity noise (fraction)
+    (sigscale = 0.1)            Tolerance for sigma clipping scaling correction       (pclip = -0.5)           pclip: Percentile clipping parameter
+        (grow = 0)              Radius (pixels) for 1D neighbor rejection
+        (mode = "ql")           
+
+cc> flatcombine
+cc> hedit Flatv imagetype "flat"
+
+
+Normalizing the combined flat frame
+
+Normalization involves dividing the combined flat field by it's average
+(or better median) to give you a value very close to 1. This will give you
+the combined flat field with a uniform value which will NOT subtract any
+data values from your objects. My preference is to do this using imarith.
+
+cc>imarith Flatv / 16606 Flatvnorm
+
+This will divide the combined flat field in V by it's average to give the
+resultant Flatvnorm. You can use imstat to get the average over the whole
+frame. Repeat for Flati.
+
+
+Flat field correction
+
+We now come to use 'ccdproc' again to apply the flat field correction.
+After this the data will be ready for cosmic ray removal (using cosmicrays)
+and sky subtraction.
+A few parameters have to be changed.
+
+cc> eparam ccdproc
+       images = "ngc5033v"      List of CCD images to correct
+    (overscan = no)             Apply overscan strip correction?
+        (trim = no)             Trim the image?
+     (flatcor = yes)            Apply flat field correction?
+        (flat = "Flatvnorm")    Flat field images
+
+cc> ccdproc
+
+If you also want to subtract the zero frame, you should set zerocor=yes 
+and zero=biascomb.
+
+You might ask yourself why we used the task 'ccdproc' twice, we could have
+done it all in one go!
+In theory, the effect of not subtracting bias level from flat field before
+normalizing has got only a marginal effect if the bias level is much less 
+than the flat field level and the bias frame is nice and smooth.
+
+However, again my preference is to do this manually using imarith.
+
+cc> imarith ngc5033 / Flatvnorm ngc5033vff
+
+Here we are diving the object frame by the normalized combined flat field to
+produce the resultant ngc5033vff.
+
+The reduction is almost complete. What we need to do now is to get rid of as
+much of the cosmics that ccdproc didn't clear up. Of course this depends on
+how choosy you are. There may be the case that you are not too worried about
+cleaning up the whole image if you discover there are no CREs near the area
+of interest on your frame (imaging or spectroscopy). However, for imaging 
+galaxies at least, it is best to get rid of the cosmics before subtracting the
+global sky background.
+
+cc> eparm cosmicrays
+
+input   =           ngc5033vff  List of images in which to detect cosmic rays
+output  =               n5033v  List of cosmic ray replaced output images (optio
+(badpix =                     ) List of bad pixel files (optional)
+
+(ccdtype=                     ) CCD image type to select (optional)
+(thresho=                   5.) Detection threshold above mean
+(fluxrat=                  10.) Flux ratio threshold (in percent)
+(npasses=                    5) Number of detection passes
+(window =                    5) Size of detection window
+
+(interac=                  yes) Examine parameters interactively?
+(train  =                   no) Use training objects?
+(objects=                     ) Cursor list of training objects
+(savefil=                     ) File to save train objects
+answer  =                  yes  Review parameters for a particular image?
+(mode   =                   ql)
+
+This package will get rid of CREs by defining a flux ratio threshold. For more
+details see help. A plot of the cosmics will come up and you can set the
+thresholds for which to detect a CRE. In this case values of 5 and 10 for
+above mean and flux ratio were appropriate. CREs are marked as '+' and data
+values as 'X'. You can mark and delete the cosmics.
+ Typing 'q' will then set the
+program off to do the CRE removal. You should then be left with a CRE-less
+image in principal. Check the image with display/imexam and implot.
+
+Next step is sky subtraction. I couldn't find anything in IRAF that did a
+reliable sky subtraction for imaging. The problem with galaxies is that light
+is spread and thus contaminates the background of the whole frame sometimes.
+You could check the sky background using imexam where you think there is
+no contamination near the corners of the image and then subtract this
+value from the frame. In the case of stars, there are lots of packages in
+IRAF that let you do aperture photometry and automatically subtract the
+sky value in the outer annulus. In the case of galaxies, I chose to use
+a package in the STARLINK environment called ESP (Extended Surface Photometry).
+Within ESP there is a routine called HISTPEAK which fits the global sky
+background and gives values of the GSB as mean, median and interpolated.
+In principle, the most accurate determination of the GSB is given by the
+median interpolated. ESP needs images in .sdf format. By now we have 2
+images (n5033v and n5033i) that need to be sky subtracted. First we need to
+convert both files from IRAF to FITS format.
+
+cc> wfits
+
+
+iraf_fil=               n5033v  IRAF images
+fits_fil=           n5033v.fit  FITS filename
+newtape =                       Blank tape?
+(make_im=                  yes) Create a FITS image?
+(long_he=                   no) Print FITS header cards?
+(short_h=                  yes) Print short header?
+(bitpix =                    0) FITS bits per pixel
+(blockin=                    0) FITS tape blocking factor
+(scale  =                  yes) Scale data?
+(autosca=                  yes) Auto_scaling?
+bscale  =                   1.  FITS bscale
+bzero   =                   0.  FITS bzero
+(mode   =                   ql)
+
+And the same with n5033i. Then convert these 2 fits files to sdf by using the
+KAPPA routine FITSDIN. Make sure you have done a 'source /star/etc/login'
+and 'source /star/etc/cshrc' before you issue the 'KAPPA' command.
+
+   KAPPA commands are now available -- (Version 0.9-3)
+   KAPPA uses NAG routines, by permission of NAG ltd.
+ 
+   Type kaphelp for help on KAPPA commands
+   Type "showme sun95" to browse the hypertext documentation
+
+> fitsdin
+
+  FILES - Give a list of the FITS files to be processed > n5033v.fit
+
+FITSDIN will then read the fits image header before asking for the output
+file name. The .sdf extension is not neccesary here.
+
+> esp
+
+  
+
+     ESP commands are now available -- (Version 0.7-2)
+     ESP uses NAG Fortran Library routines, courtesy of NAG Ltd.
+
+   Type esphelp for help on ESP commands
+
+> histpeak
+
+ESP HISTPEAK running.
+IN - Image NDF filename /@n5033i/ > 
+Filename:   /export/scratch/lpss21a/mwa/jkt3127/n5033i
+Title:      NGC 5033 FILTER I 600SEC
+Shape:      1025 x 1020  pixels
+Bounds:     x = 1:1025  y = 1:1020
+Image size: 1045500 pixels
+USE - Use the whole image or an ARD file /'w'/ > 
+SFACT - Smoothing width you wish to use /0/ > 
+DEVICE - Display device code or name /@xwindows/ > 
+
+A histogram plot will come up of the pixel count value vs. frequency (no. of
+pixels). The following results will be displayed:
+
+HISTPEAK Results: /export/scratch/lpss21a/mwa/jkt3127/n5033i
+
+Pixels (used):            1045500     Pixels (bad):                0
+Lowest count:            4722.314     Highest count:       66501.562
+Skewness:                  23.099     Kurtosis:              821.887
+
+Mean:                   15752.089     Median:              15644.682
+
+Histogram modal values:
+Unsmoothed:             15619.314     Smoothed:            15619.314
+Projected:              15622.995     Interpolated:        15628.073
+
+Absolute dev.:            292.802     Variance:             1026604.
+Standard. dev.:          1013.215     Back. st. dev.:        195.960
+
+Smoothing filter radius:
+Radius request:                 0     Radius actual:               0
+
+Contents of the most occupied histogram bin:
+Unsmoothed:              2066.000     Smoothed:             2066.000
+Interpolated:            1966.668
+
+The value of the median interpolated is 15628.073. This will be the value to
+subtract the image (n5033i) by. Repeat the above for n5033v.
+
+Back in IRAF, use imarith to subtract the sky.
+
+cc> imarith n5033i - 16528.073 n5033_i
+
+Check with implot. The sky should have been subtracted. 
+
+The final reduced image of NGC5033 in I is n5033_i
+
+Repeat for n5033v.
+
+We now have reduced images of NGC5033 in V and I. The next part involves
+constructing the colour difference map of V-I. Before we do this however,
+we have to align the both V and I images together and match both the Point
+Spread Functions (PSFs) of a sample of stars. i.e. we have to match the
+seeing before we divide V by I. If this is not done, then spurious results and
+features may arise in the colour map which is equivalent to not matching the
+integration times (or counts) of the images (this is important if flux
+calibrating your data).
+
+To measure the co-ords of a few star in the V field (n5033_v), display image
+and imexam. 'R' option in imexam can give you co-ords of stars. Do the same
+for the I image (n5033_i). Then use the imshift to shift the V image to align
+with the I image.
+
+cc> imshift
+
+Input images to be fit (n5033_v): 
+Output images (n5033_vshift): 
+Fractional pixel shift in x (5.51): 
+Fractional pixel shift in y (-8.8):
+
+This will give you n5033_vshift, the shifted V image. 
+
+WARNING! By shifting the
+V image, you have just degraded the quality of this image! Any operation you
+apply to an image, will degrade it. This might be fine if you are not
+interested in certain aspects of the analysis such as 'seeing' or 'smearing'
+affects. The shift operation will have done something (degraded) to the
+FWHMs of the stars and also the galaxy in the shifted image. 
+
+This brings us to matching the PSFs of the stars in both the V and I images
+of NGC5033. Use the 'R' option in imexam to measure the FWHMs of several
+stars (the more the merrier) and then take the average FWHM. Do the same with
+the other image (V or I). If you find that the average FWHM is not quite the
+same, then you will have to SMOOTH the image which has the GOOD seeing (
+seeing=FWHM*pixel scale). The amount of smoothing is determined by:
+
+
+             smoothing = FWHM / 2.35                                      EQN1
+
+ 
+            where FWHM = SQRT( (averageFWHMgood)^2 - (averageFWHMbad)^2 ) EQN2
+
+            good=image with good seeing (the one to be smoothed)
+            bad=image with bad seeing.
+    
+            e.g. average FWHM in good seeing image (could be V or I) is 3.82
+                 average FWHM in bad seeing image is 4.43
+
+           substitute values in EQN 2 to get FWHM and then into EQN1 to get
+           smoothing factor. In this case the factor is 0.95
+
+Use gauss in IRAF to smooth images.
+
+cc> epar gauss
+
+input   =              n5033_i  Input images to be fit
+output  =        n5033_ismooth  Output images
+sigma   =                 0.95  Sigma of Gaussian along major axis of ellipse
+(ratio  =                   1.) Ratio of sigma in y to x
+(theta  =                   0.) Position angle of ellipse
+(nsigma =                   5.) Extent of Gaussian kernel in sigma
+(bilinea=                  yes) Use bilinear approximation to Gaussian kernel
+(boundar=              nearest) Boundary (constant,nearest,reflect,wrap)
+(constan=                   0.) Constant for boundary extension
+(mode   =                   ql)
+
+A value for nsigma (the window or how many pixels you want the smoothing to
+extend to) of 5 is reasonable.
+
+After smoothing check with imexam the average FWHM of the smoothed image.
+In this case, the smoothed FWHM is 4.59 from a good value of 3.82. So we have
+FWHM 4.59 (I image) and FWHM 4.43 (V image) which in arcsecs (FWHM*0.33 for
+JKT+TEK4) is 1.51 and 1.46 respectively. The I image before smoothing had a
+seeing of 1.26. Thus the seeing is now similar in
+both images. We can now divide the V image by the I image to produce the
+colour difference map of NGC5033.
+
+
+cc> imarith n5033_vshift / n5033_ismooth ngc5033v-i
+
+  
+The final colour map is called ngc5033v-i. When displaying this image, scale
+image as z1=0 and z2=1 since the features we are interested in are low level.
+The majority of the image will be noise but the nucleus of the galaxy will
+show up features which are blue (white on printout) and red (black on printout)
+. Dust rings and lanes will show up red and areas of star formation in spiral
+arms will show up blue.
+  
+If you just want to show the colours, then that's fine, but if you want to flux calibrate your
+data, then you DO have to normalize things. Just divide the frames (V
+and I) to get them in counts/s as you would with the standard star. The
+standard star will take into account the colours due to the CCD QE through
+each bandpass and when you divide, everything will be scaled to unity (you
+have different coloured standards monitored during the night to get the
+'colour terms').
+So, if you want flux calibration. then flux calibrate. the V and I images with
+the standard to get magnitudes and then divide V by I if you want to show the colour
+map with (V-I) magnitudes. You should really flux calibrate monochromatic images in each
+band and not the colour map! The final (V-I) magnitude will depend on type of
+filter being used i.e. Harris or KP or RGO or Gunn.
+
+This brings the first part of the course to an end. The next part will
+concentrate on how to reduce standards stars to derive the extinction (first
+and second order -colour) and instrumental magnitudes to give the 'zero points'
+ which can then be used to obtain the real magnitudes of the standards for
+comparison with the landolt values and hence flux calibration.
+
+I thank Pete Sorensen for the use of his 'style file' 
+which was used for the notes on his spectroscopy course from which some
+reduction steps have been reproduced that also apply to imaging.
+
+We thank the anonymous referee for comments.
+
+(c) 1998 Mirza Asif and Pete Sorensen
+
+
+ERRATUM:
+
+FLATFIELD CORRECTION
+====================
+
+In the Image Reduction notes, the flatfield images were first
+combined using a median filter for thereafter being normalized 
+to 1 by dividing by the median value of the combined flatfield.
+
+If the skyflats are of very different level, this can cause the 
+median filter to select the values from one particular 
+frame, which not only reduces the S/N in the resulting flatfield,
+but also invalidates elliminating cosmic rays.
+
+A way to overcome this problem is to reverse the reduction sequence:
+1. Normalize each flatfield frame to 1 by dividing by the median value
+2. Combine the normalized flatfields (by e.g. imcombine) using a
+   median filter.
+
+-peter sorensen 21/04/98   
+
+
+
+

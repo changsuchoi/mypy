@@ -1,0 +1,68 @@
+### prerequisite
+# atlas-devel
+# fftw-devel
+# plplot-devel
+# intel mkl
+# openblas-devel
+# cdsclient
+# cfitsio-devel
+# libtiff-devel
+# libjpeg-turbo-devel
+# zlib-devel
+
+
+svn co https://astromatic.net/pubsvn/software/sextractor/trunk sextractor
+svn co https://astromatic.net/pubsvn/software/scamp/trunk scamp
+svn co https://astromatic.net/pubsvn/software/swarp/trunk swarp
+svn co https://astromatic.net/pubsvn/software/psfex/trunk psfex
+svn co https://astromatic.net/pubsvn/software/stiff/trunk stiff
+https://github.com/astromatic/psfex.git
+https://github.com/astromatic/sextractor.git
+https://github.com/astromatic/scamp.git
+
+
+# sextractor 2.25
+svn co https://astromatic.net/pubsvn/software/sextractor/trunk sextractor
+source /opt/intel/parallel_studio_xe_2019/bin/psxevars.sh
+sh autogen.sh
+./configure --enable-mkl --enable-auto-flags --enable-best-link --enable-openblas --enable-threads --enable-icc
+make -j
+sudo make install
+
+# scamp 2.7.8
+source /opt/intel/parallel_studio_xe_2019/bin/psxevars.sh
+sh autogen.sh
+./configure --enable-mkl --enable-auto-flags --enable-best-link --enable-openblas --enable-threads --enable-icc --enable-plplot
+make -j
+sudo make install
+
+# psfex 3.21.1
+source /opt/intel/parallel_studio_xe_2019/bin/psxevars.sh
+sh autogen.sh
+./configure --enable-mkl --enable-auto-flags --enable-best-link --enable-openblas --enable-threads --enable-icc --enable-plplot
+make -j
+sudo make install
+
+# swarp 2.41.1
+sh autogen.sh
+./configure --enable-auto-flags --enable-icc --enable-threads --enable-best-link 
+# edit swarp/src/Makefile
+## AM_LDFLAGS = -static-intel -openmp-link static -shared-libgcc 	-no-intel-extensions  
+# --> AM_LDFLAGS = -static-intel -qopenmp-link static -shared-libgcc 	-no-intel-extensions  
+make -j
+sudo make install
+
+# stiff 2.7.1
+./configure --enable-auto-flags --enable-icc --enable-threads --enable-best-link
+### error
+# cd . && automake-1.16 --foreign
+# configure.ac:77: error: required file 'autoconf/compile' not found
+# configure.ac:77:   'automake --add-missing' can install 'compile'
+# make: *** [Makefile:399: Makefile.in] Error 1
+
+### automake version error
+aclocal 
+automake --add-missing
+
+make -j
+sudo make install

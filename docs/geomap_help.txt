@@ -1,0 +1,322 @@
+ geomap (Jan01) 	images.immatch 	geomap (Jan01)
+
+NAME
+
+    geomap -- compute one or more spatial transformation functions 
+
+USAGE
+
+    geomap input database xmin xmax ymin ymax 
+
+PARAMETERS
+
+    input
+        The list of text files containing the pixel coordinates of control points in the reference and input images. The control points are listed one per line with xref, yref, xin, and yin in columns 1 through 4 respectively. 
+
+    database
+        The name of the text file database where the computed transformations will be stored. 
+
+    xmin, xmax, ymin, ymax
+        The range of reference coordinates over which the computed coordinate transformation is valid. If the user is working in pixel units these limits should normally be set to the values of the column and row limits of the reference image, e.g xmin = 1.0, xmax = 512, ymin= 1.0, ymax = 512 for a 512 x 512 image. The minimum and maximum xref and yref values in input are used if xmin, xmax, ymin, or ymax are undefined. 
+
+    transforms = ""
+        An optional list of transform record names. If transforms is undefined the database record(s) are assigned the names of the individual text files specified by input. 
+
+    results = ""
+        Optional output files containing a summary of the results including a description of the transform geometry and a listing of the input coordinates, the fitted coordinates, and the fit residuals. The number of results files must be one or equal to the number of input files. If results is "STDOUT" the results summary is printed on the standard output. 
+
+    fitgeometry = "general"
+        The fitting geometry to be used. The options are the following.
+
+        shift
+            X and y shifts only are fit. 
+
+        xyscale
+            X and y shifts and x and y magnification factors are fit. Axis flips are allowed for. 
+
+        rotate
+            X and y shifts and a rotation angle are fit. Axis flips are allowed for. 
+
+        rscale
+            X and y shifts, a magnification factor assumed to be the same in x and y, and a rotation angle are fit. Axis flips are allowed for. 
+
+        rxyscale
+            X and y shifts, x and y magnifications factors, and a rotation angle are fit. Axis flips are allowed for. 
+
+        general
+            A polynomial of arbitrary order in x and y is fit. A linear term and a distortion term are computed separately. The linear term includes an x and y shift, an x and y scale factor, a rotation and a skew. Axis flips are also allowed for in the linear portion of the fit. The distortion term consists of a polynomial fit to the residuals of the linear term. By default the distortion term is set to zero. 
+
+        For all the fitting geometries except "general" no distortion term is fit, i.e. the x and y polynomial orders are assumed to be 2 and the cross term switches are assumed to be "none", regardless of the values of the xxorder, xyorder, xxterms, yxorder, yyorder and yxterms parameters set by the user. 
+
+    function = "polynomial"
+        The type of analytic surface to be fit. The options are the following.
+
+        legendre
+            Legendre polynomials in x and y. 
+
+        chebyshev
+            Chebyshev polynomials in x and y. 
+
+        polynomial
+            Power series in x and y. 
+
+    xxorder = 2, xyorder = 2, yxorder = 2, yyorder = 2
+        The order of the polynomials in x and y for the x and y fits respectively. The default order and cross term settings define the linear term in x and y, where the 6 coefficients can be interpreted in terms of an x and y shift, an x and y scale change, and rotations of the x and y axes. The "shift", "xyscale", "rotation", "rscale", and "rxyscale", fitting geometries assume that the polynomial order parameters are 2 regardless of the values set by the user. If any of the order parameters are higher than 2 and fitgeometry is "general", then a distortion surface is fit to the residuals from the linear portion of the fit. 
+
+    xxterms = "half", yxterms = "half"
+        The options are:
+
+        none
+            The individual polynomial terms contain powers of x or powers of y but not powers of both. 
+
+        half
+            The individual polynomial terms contain powers of x and powers of y, whose maximum combined power is max (xxorder - 1, xyorder - 1) for the x fit and max (yxorder - 1, yyorder - 1) for the y fit. 
+
+        full
+            The individual polynomial terms contain powers of x and powers of y, whose maximum combined power is max (xxorder - 1, xyorder - 1) for the x fit and max (yxorder - 1, yyorder - 1) for the y fit. 
+
+        The "shift", "xyscale", "rotation", "rscale", and "rxyscale" fitting geometries, assume that the cross term switches are set to "none" regardless of the values set by the user. If either of the cross terms parameters are set to "half" or "full" and fitgeometry is "general" then a distortion surface is fit to the residuals from the linear portion of the fit. 
+
+    maxiter = 0
+        The maximum number of rejection iterations. The default is no rejection. 
+
+    reject = 3.0
+        The rejection limit in units of sigma. 
+
+    calctype = "real"
+        The precision of the coordinate transformation calculations. The options are real and double. 
+
+    verbose = yes
+        Print messages about actions taken by the task ? 
+
+    interactive = yes
+        In interactive mode the user may interact with the fitting process, e.g. change the order of the fit, reject points, display the data, etc. 
+
+    graphics = "stdgraph"
+        The graphics device. 
+
+    cursor = ""
+        The graphics cursor. 
+
+DESCRIPTION
+
+    GEOMAP computes the transformation required to map the reference coordinate system to the input coordinate system. The coordinates of points in common to the two systems are listed in the input text file(s) input one per line in the following format: "xref yref xin yin".
+
+    The computed transforms are stored in the text database file database in records with names specified by the parameter transforms. If the transforms parameter is undefined the records are assigned the name of the input coordinate files.
+
+    The computed transformation has the form shown below, where the reference coordinates must be defined in the coordinate system of the reference image system if the user intends to resample an image with gregister or geotran, or transform coordinates from the reference coordinate system to the input image coordinate system.
+
+        xin = f (xref, yref)
+        yin = g (xref, yref)
+
+    If on the other hand the user wishes to transform coordinates from the input image coordinate system to the reference coordinate system then he or she must reverse the roles of the reference and input coordinates as defined above, and compute the inverse transformation.
+
+    The functions f and g are either a power series polynomial or a Legendre or Chebyshev polynomial surface of order xxorder and xyorder in x and yxorder and yyorder in y.
+
+    Several polynomial cross terms options are available. Options "none", "half", and "full" are illustrated below for a quadratic polynomial in x and y.
+
+    xxterms = "none", xyterms = "none"
+    xxorder = 3, xyorder = 3, yxorder = 3, yyorder = 3
+
+
+       xin = a11 + a21 * xref + a12 * yref +
+             a31 * xref ** 2 + a13 * yref ** 2
+       yin = a11' + a21' * xref + a12' * yref +
+             a31' * xref ** 2 + a13' * yref ** 2
+
+
+    xxterms = "half", xyterms = "half"
+    xxorder = 3, xyorder = 3, yxorder = 3, yyorder = 3
+
+
+       xin = a11 + a21 * xref + a12 * yref +
+             a31 * xref ** 2 + a22 * xref * yref + a13 * yref ** 2
+       yin = a11' + a21' * xref + a12' * yref +
+             a31' * xref ** 2 + a22' * xref * yref + a13' * yref ** 2
+
+
+    xxterms = "full", xyterms = "full"
+    xxorder = 3, xyorder = 3, yxorder = 3, yyorder = 3
+
+
+       xin = a11 + a21 * xref + a31 * xref ** 2 +
+             a12 * yref + a22 * xref * yref +  a32 * xref ** 2 * yref +
+             a13 * yref ** 2 + a23 * xref *  yref ** 2 +
+             a33 * xref ** 2 * yref ** 2
+       yin = a11' + a21' * xref + a31' * xref ** 2 +
+             a12' * yref + a22' * xref * yref +  a32' * xref ** 2 * yref +
+             a13' * yref ** 2 + a23' * xref *  yref ** 2 +
+             a33' * xref ** 2 * yref ** 2
+
+    If the fitgeometry parameter is anything other than "general", the order parameters assume the value 2 and the cross terms switches assume the value "none", regardless of the values set by the user. The computation can be done in either real or double precision by setting calctype. Automatic pixel rejection may be enabled by setting axiter > 0 and reject to some number greater than 0.
+
+    Xmin, xmax, ymin and ymax define the region of validity of the fit in the reference coordinate system and must be set by the user. These parameters can be used to reject out of range data before the actual fitting is done.
+
+    GEOMAP may be run interactively by setting interactive = yes and inputting commands by the use of simple keystrokes. In interactive mode the user has the option of changing the fit parameters and displaying the data graphically until a satisfactory fit has been achieved. The available keystroke commands are listed below.
+
+    ?	Print options
+    f	Fit the data and graph with the current graph type (g, x, r, y, s)
+    g	Graph the data and the current fit
+    x,r	Graph the x fit residuals versus x and y respectively
+    y,s	Graph the y fit residuals versus x and y respectively
+    d,u	Delete or undelete the data point nearest the cursor
+    o	Overplot the next graph
+    c	Toggle the constant x, y plotting option
+    t       Plot a line of constant x, y through the nearest data point	
+    l	Print xshift, yshift, xmag, ymag, xrotate, yrotate
+    q	Exit the interactive curve fitting
+
+    The parameters listed below can be changed interactively with simple colon commands. Typing the parameter name alone will list the current value.
+
+    :show				List parameters
+    :fitgeometry			Fitting geometry (shift,xyscale,rotate,
+    				rscale,rxyscale,general)
+    :function [value]	        Fitting function (chebyshev,legendre,
+                                    polynomial)
+    :xxorder :xyorder [value]	X fitting function xorder, yorder
+    :yxorder :yyorder [value]	Y fitting function xorder, yorder
+    :xxterms :yxterms [n/h/f]	X, Y fit cross terms type
+    :maxiter [value]		Maximum number of rejection iterations
+    :reject [value]			Rejection threshold
+
+    The final fit is stored in a simple text file in a format suitable for use by the GREGISTER or GEOTRAN tasks.
+
+    If verbose is "yes", various pieces of useful information are printed to the terminal as the task proceeds. If results is set to a file name then the input coordinates, the fitted coordinates, and the residuals of the fit are written to that file.
+
+    The transformation computed by the "general" fitting geometry is arbitrary and does not correspond to a physically meaningful model. However the computed coefficients for the linear term can be given a simple geometrical geometric interpretation for all the fitting geometries as shown below.
+
+    	fitting geometry = general (linear term)
+    	    xin = a + b * xref + c * yref
+    	    yin = d + e * xref + f * yref
+
+
+    	fitting geometry = shift
+    	    xin = a + xref
+    	    yin = d + yref
+
+
+    	fitting geometry = xyscale
+    	    xin = a + b * xref
+    	    yin = d + f * yref
+
+
+    	fitting geometry = rotate
+    	    xin = a + b * xref + c * yref
+    	    yin = d + e * xref + f * yref
+    	    b * f - c * e = +/-1
+    	    b = f, c = -e or b = -f, c = e
+
+
+    	fitting geometry = rscale
+    	    xin = a + b * xref + c * yref
+    	    yin = d + e * xref + f * yref
+    	    b * f - c * e = +/- const
+    	    b = f, c = -e or b = -f, c = e
+
+
+    	fitting geometry = rxyscale
+    	    xin = a + b * xref + c * yref
+    	    yin = d + e * xref + f * yref
+    	    b * f - c * e = +/- const
+
+    The coefficients can be interpreted as follows. Xref0, yref0, xin0, yin0 are the origins in the reference and input frames respectively. Orientation and skew are the rotation of the x and y axes and their deviation from perpendicularity respectively. Xmag and ymag are the scaling factors in x and y and are assumed to be positive.
+
+    	general (linear term)
+    	    xrotation = rotation - skew / 2
+    	    yrotation = rotation + skew / 2
+    	    b = xmag * cos (xrotation)
+    	    c = ymag * sin (yrotation)
+    	    e = -xmag * sin (xrotation)
+    	    f = ymag * cos (yrotation)
+    	    a = xin0 - b * xref0 - c * yref0 = xshift
+    	    d = yin0 - e * xref0 - f * yref0 = yshift
+
+
+    	shift
+    	    xrotation = 0.0,  yrotation = 0.0
+    	    xmag = ymag = 1.0
+    	    b = 1.0
+    	    c = 0.0
+    	    e = 0.0
+    	    f = 1.0
+    	    a = xin0 - xref0 = xshift
+    	    d = yin0 - yref0 = yshift
+
+
+    	xyscale
+    	    xrotation 0.0 / 180.0 yrotation = 0.0
+    	    b = + /- xmag
+    	    c = 0.0
+    	    e = 0.0
+    	    f = ymag
+    	    a = xin0 - b * xref0 = xshift
+    	    d = yin0 - f * yref0 = yshift
+
+
+    	rscale
+    	    xrotation = rotation + 0 / 180, yrotation = rotation
+    	    mag = xmag = ymag
+    	    const = mag * mag
+    	    b = mag * cos (xrotation)
+    	    c = mag * sin (yrotation)
+    	    e = -mag * sin (xrotation)
+    	    f = mag * cos (yrotation)
+    	    a = xin0 - b * xref0 - c * yref0 = xshift
+    	    d = yin0 - e * xref0 - f * yref0 = yshift
+
+
+    	rxyscale
+    	    xrotation = rotation + 0 / 180, yrotation = rotation
+    	    const = xmag * ymag
+    	    b = xmag * cos (xrotation)
+    	    c = ymag * sin (yrotation)
+    	    e = -xmag * sin (xrotation)
+    	    f = ymag * cos (yrotation)
+    	    a = xin0 - b * xref0 - c * yref0 = xshift
+    	    d = yin0 - e * xref0 - f * yref0 = yshift
+
+EXAMPLES
+
+    1. Compute the linear transformation between coordinate systems. A record called "m51.coo" will be written in the database file "database".
+
+    	cl> geomap m51.coo database 1. 512. 1. 512.
+
+    2. Compute the 3rd order transformation in x and y between two coordinate systems. A record called "m51.coo" will be written in the database file "database". This record supersedes the one of the same name written in example 1.
+
+    	cl> geomap m51.coo database 1. 512. 1. 512. xxo=4 xyo=4 \
+
+    	>>> yxo=4 yyo=4 xxt=full yxt=full inter-
+
+    3. Register a 500 by 500 image of m51 to an 800 by 800 image of the same field taken with a different instrument, and display the original 800 by 800 image and the transformed image. Use the default fitting parameters.
+
+    	cl> geomap m51.coo database 1.0 800.0 1.0 800.0
+    	cl> gregister m51.500 m51.500.out database m51.coo
+    	cl> display m51.800 1 fi+
+    	cl> display m51.500.out 2 fi+
+
+    4. Use the above transform to transform a list of object pixel coordinates in the m51.800 image to their pixel coordinates in the m51.500 system.
+
+    	cl> geoxytran m51.800.xy m51.500.xy database m51.coo
+
+    5. Transform object pixel coordinates in the m51.500 image to their pixel coordinates in the m51.800 image. Note that to do this the roles of the reference and input coordinates defined in example 3 must be reversed and the inverse transform must be computed.
+
+    	cl> fields m51.coo 3,4,1,2 > m51.coo.inv
+    	cl> geomap m51.coo.inv database 1.0 512.0 1.0 512.0
+    	cl> geoxytran m51.512.xy m51.800.xy database m51.coo.inv
+
+    6. Compute 3 different transforms, store them in the same database file, and use them to transform 3 different images. Use the original image names as the database record names.
+
+    	cl> geomap coo1,coo2,coo3 database 1. 512. 1. 512. \
+
+    	>>> transforms=im1,im2,im3
+    	cl> gregister im1,im2,im3  im1.out,im2.out,im3.out database \
+
+    	>>> im1,im2,im3
+
+BUGS
+
+    The user should be aware that for high order fits the "polynomial" basis functions become very unstable. Switching to the "legendre" or "chebyshev" polynomials and/or going to double precision will usually cure the problem.
+
+SEE ALSO
+
+    imshift, magnify, rotate, imlintran, gregister, geotran, geoxytran 

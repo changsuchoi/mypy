@@ -1,0 +1,231 @@
+http://cernlib.web.cern.ch/cernlib/download/2006_source/tar/
+
+[DIR] Parent Directory                                    -   
+[   ] 2006_src.contents              20-Dec-2006 16:37  1.9M  
+[   ] 2006_src.tar.gz                20-Dec-2006 16:33   28M  
+[   ] gcalor.contents                14-May-2003 15:53  446   
+[   ] gcalor.tar.gz                  14-May-2003 15:52  671K  
+[   ] include.contents               20-Dec-2006 16:39  109K  
+[   ] include.tar.gz                 20-Dec-2006 16:36  347K  
+[   ] mathlib32_src.tar.gz           03-Apr-2003 16:13  412K  
+[   ] minuit32_src.tar.gz            19-Jun-2002 16:44   76K  
+[   ] nypatchy_boot.tar.gz           04-Dec-2003 18:04  161K  
+[   ] plitar                         25-Jun-2001 18:15   12K  
+
+
+
+/data2/program/cernlib
+
+
+
+Note that this is CERNlib installation for Fedora 18 - 32 bit
+
+yum install xbae
+yum --releasever=15 install libSM-1.2.0-2.fc15.i686
+yum --releasever=16 install cernlib cernlib-devel
+yum --releasever=16 --skip-broken --nogpgcheck install cernlib cernlib-devel
+
+
+yum --releasever=16 --skip-broken  --nogpgcheck  install cernlib cernlib-devel
+Loaded plugins: langpacks, presto, refresh-packagekit
+Resolving Dependencies
+--> Running transaction check
+---> Package cernlib.i686 0:2006-35.fc14 will be installed
+---> Package cernlib-devel.i686 0:2006-35.fc14 will be installed
+--> Processing Dependency: lapack-devel for package: cernlib-devel-2006-35.fc14.i686
+--> Processing Dependency: xbae-devel for package: cernlib-devel-2006-35.fc14.i686
+--> Processing Dependency: blas-devel for package: cernlib-devel-2006-35.fc14.i686
+--> Processing Dependency: libXaw-devel for package: cernlib-devel-2006-35.fc14.i686
+--> Running transaction check
+---> Package blas-devel.i686 0:3.3.1-1.fc16 will be installed
+--> Processing Dependency: blas = 3.3.1-1.fc16 for package: blas-devel-3.3.1-1.fc16.i686
+--> Processing Dependency: libblas.so.3 for package: blas-devel-3.3.1-1.fc16.i686
+---> Package lapack-devel.i686 0:3.3.1-1.fc16 will be installed
+--> Processing Dependency: lapack = 3.3.1-1.fc16 for package: lapack-devel-3.3.1-1.fc16.i686
+---> Package libXaw-devel.i686 0:1.0.8-1.fc15 will be installed
+--> Processing Dependency: libXaw = 1.0.8-1.fc15 for package: libXaw-devel-1.0.8-1.fc15.i686
+--> Processing Dependency: pkgconfig(xpm) for package: libXaw-devel-1.0.8-1.fc15.i686
+--> Processing Dependency: pkgconfig(xmu) for package: libXaw-devel-1.0.8-1.fc15.i686
+--> Processing Dependency: pkgconfig(xt) for package: libXaw-devel-1.0.8-1.fc15.i686
+---> Package xbae-devel.i686 0:4.60.4-13.fc15 will be installed
+--> Processing Dependency: xbae = 4.60.4-13.fc15 for package: xbae-devel-4.60.4-13.fc15.i686
+--> Processing Dependency: lesstif-devel for package: xbae-devel-4.60.4-13.fc15.i686
+--> Running transaction check
+---> Package blas.i686 0:3.3.1-1.fc16 will be installed
+---> Package lapack.i686 0:3.3.1-1.fc16 will be installed
+---> Package lesstif-devel.i686 0:0.95.2-2.fc15 will be installed
+--> Processing Dependency: lesstif = 0.95.2-2.fc15 for package: lesstif-devel-0.95.2-2.fc15.i686
+--> Processing Dependency: libXp-devel for package: lesstif-devel-0.95.2-2.fc15.i686
+--> Processing Dependency: imake for package: lesstif-devel-0.95.2-2.fc15.i686
+---> Package libXaw-devel.i686 0:1.0.8-1.fc15 will be installed
+--> Processing Dependency: libXaw = 1.0.8-1.fc15 for package: libXaw-devel-1.0.8-1.fc15.i686
+---> Package libXmu-devel.i686 0:1.1.0-2.fc15 will be installed
+--> Processing Dependency: libXmu = 1.1.0-2.fc15 for package: libXmu-devel-1.1.0-2.fc15.i686
+---> Package libXpm-devel.i686 0:3.5.8-3.fc15 will be installed
+--> Processing Dependency: libXpm = 3.5.8-3.fc15 for package: libXpm-devel-3.5.8-3.fc15.i686
+---> Package libXt-devel.i686 0:1.1.1-1.fc16 will be installed
+--> Processing Dependency: libXt = 1.1.1-1.fc16 for package: libXt-devel-1.1.1-1.fc16.i686
+--> Processing Dependency: pkgconfig(ice) for package: libXt-devel-1.1.1-1.fc16.i686
+--> Processing Dependency: pkgconfig(sm) for package: libXt-devel-1.1.1-1.fc16.i686
+---> Package xbae-devel.i686 0:4.60.4-13.fc15 will be installed
+--> Processing Dependency: xbae = 4.60.4-13.fc15 for package: xbae-devel-4.60.4-13.fc15.i686
+--> Running transaction check
+---> Package imake.i686 0:1.0.4-3.fc15 will be installed
+---> Package lesstif-devel.i686 0:0.95.2-2.fc15 will be installed
+--> Processing Dependency: lesstif = 0.95.2-2.fc15 for package: lesstif-devel-0.95.2-2.fc15.i686
+---> Package libICE-devel.i686 0:1.0.7-1.fc16 will be installed
+--> Processing Dependency: libICE = 1.0.7-1.fc16 for package: libICE-devel-1.0.7-1.fc16.i686
+---> Package libSM-devel.i686 0:1.2.0-2.fc15 will be installed
+--> Processing Dependency: libSM = 1.2.0-2.fc15 for package: libSM-devel-1.2.0-2.fc15.i686
+---> Package libXaw-devel.i686 0:1.0.8-1.fc15 will be installed
+--> Processing Dependency: libXaw = 1.0.8-1.fc15 for package: libXaw-devel-1.0.8-1.fc15.i686
+---> Package libXmu-devel.i686 0:1.1.0-2.fc15 will be installed
+--> Processing Dependency: libXmu = 1.1.0-2.fc15 for package: libXmu-devel-1.1.0-2.fc15.i686
+---> Package libXp-devel.i686 0:1.0.0-16.fc15 will be installed
+--> Processing Dependency: libXp = 1.0.0-16.fc15 for package: libXp-devel-1.0.0-16.fc15.i686
+---> Package libXpm-devel.i686 0:3.5.8-3.fc15 will be installed
+--> Processing Dependency: libXpm = 3.5.8-3.fc15 for package: libXpm-devel-3.5.8-3.fc15.i686
+---> Package libXt-devel.i686 0:1.1.1-1.fc16 will be installed
+--> Processing Dependency: libXt = 1.1.1-1.fc16 for package: libXt-devel-1.1.1-1.fc16.i686
+---> Package xbae-devel.i686 0:4.60.4-13.fc15 will be installed
+--> Processing Dependency: xbae = 4.60.4-13.fc15 for package: xbae-devel-4.60.4-13.fc15.i686
+--> Running transaction check
+---> Package cernlib.i686 0:2006-35.fc14 will be installed
+--> Running transaction check
+---> Package cernlib.i686 0:2006-35.fc14 will be installed
+--> Finished Dependency Resolution
+
+Packages skipped because of dependency problems:
+    blas-3.3.1-1.fc16.i686 from fedora
+    blas-devel-3.3.1-1.fc16.i686 from fedora
+    cernlib-devel-2006-35.fc14.i686 from fedora
+    imake-1.0.4-3.fc15.i686 from fedora
+    lapack-3.3.1-1.fc16.i686 from fedora
+    lapack-devel-3.3.1-1.fc16.i686 from fedora
+    lesstif-devel-0.95.2-2.fc15.i686 from fedora
+    libICE-devel-1.0.7-1.fc16.i686 from fedora
+    libSM-devel-1.2.0-2.fc15.i686 from fedora
+    libXaw-devel-1.0.8-1.fc15.i686 from fedora
+    libXmu-devel-1.1.0-2.fc15.i686 from fedora
+    libXp-devel-1.0.0-16.fc15.i686 from fedora
+    libXpm-devel-3.5.8-3.fc15.i686 from fedora
+    libXt-devel-1.1.1-1.fc16.i686 from fedora
+    xbae-devel-4.60.4-13.fc15.i686 from fedora
+
+Dependencies Resolved
+
+================================================================================
+ Package               Arch         Version                Repository      Size
+================================================================================
+Installing:
+ cernlib               i686         2006-35.fc14           fedora          16 M
+Skipped (dependency problems):
+ blas                  i686         3.3.1-1.fc16           fedora         314 k
+ blas-devel            i686         3.3.1-1.fc16           fedora         9.8 k
+ cernlib-devel         i686         2006-35.fc14           fedora         490 k
+ imake                 i686         1.0.4-3.fc15           fedora         255 k
+ lapack                i686         3.3.1-1.fc16           fedora         4.0 M
+ lapack-devel          i686         3.3.1-1.fc16           fedora         9.9 k
+ lesstif-devel         i686         0.95.2-2.fc15          fedora         443 k
+ libICE-devel          i686         1.0.7-1.fc16           fedora          48 k
+ libSM-devel           i686         1.2.0-2.fc15           fedora          35 k
+ libXaw-devel          i686         1.0.8-1.fc15           fedora         217 k
+ libXmu-devel          i686         1.1.0-2.fc15           fedora          37 k
+ libXp-devel           i686         1.0.0-16.fc15          fedora          17 k
+ libXpm-devel          i686         3.5.8-3.fc15           fedora          32 k
+ libXt-devel           i686         1.1.1-1.fc16           fedora         304 k
+ xbae-devel            i686         4.60.4-13.fc15         fedora         1.1 M
+
+Transaction Summary
+================================================================================
+Install                         1 Package
+Skipped (dependency problems)  15 Packages
+
+Total size: 16 M
+Installed size: 16 M
+Is this ok [y/N]: y
+Downloading Packages:
+Running Transaction Check
+Running Transaction Test
+Transaction Test Succeeded
+Running Transaction
+  Installing : cernlib-2006-35.fc14.i686                                    1/1 
+  Verifying  : cernlib-2006-35.fc14.i686                                    1/1 
+
+Installed:
+  cernlib.i686 0:2006-35.fc14                                                   
+
+Skipped (dependency problems):
+  blas.i686 0:3.3.1-1.fc16                blas-devel.i686 0:3.3.1-1.fc16       
+  cernlib-devel.i686 0:2006-35.fc14       imake.i686 0:1.0.4-3.fc15            
+  lapack.i686 0:3.3.1-1.fc16              lapack-devel.i686 0:3.3.1-1.fc16     
+  lesstif-devel.i686 0:0.95.2-2.fc15      libICE-devel.i686 0:1.0.7-1.fc16     
+  libSM-devel.i686 0:1.2.0-2.fc15         libXaw-devel.i686 0:1.0.8-1.fc15     
+  libXmu-devel.i686 0:1.1.0-2.fc15        libXp-devel.i686 0:1.0.0-16.fc15     
+  libXpm-devel.i686 0:3.5.8-3.fc15        libXt-devel.i686 0:1.1.1-1.fc16      
+  xbae-devel.i686 0:4.60.4-13.fc15       
+
+Complete!
+
+
+To install skipped ones, please try following things again:
+
+yum --releasever=14 --skip-broken  --nogpgcheck  install cernlib cernlib-devel
+yum update
+yum --releasever=16 --nogpgcheck install blas
+yum --releasever=16 --nogpgcheck install blas-devel
+yum --releasever=15 --nogpgcheck install imake
+yum --releasever=16 --nogpgcheck install lapack
+yum --releasever=16 --nogpgcheck install lapack-devel
+yum --releasever=15 --nogpgcheck --skip-broken  install lesstif-devel
+yum --releasever=16 --nogpgcheck install libICE-devel
+yum --releasever=15 --nogpgcheck install libXaw-devel
+yum --releasever=15 --nogpgcheck install libXmu-devel
+yum --releasever=15 --nogpgcheck install libXp-devel
+yum --releasever=15 --nogpgcheck install libXpm-devel
+yum --releasever=16 --nogpgcheck install libXt-devel
+yum --releasever=15 --nogpgcheck install xbae-devel
+yum install lesstif
+yum install xbae-devel
+yum install libXt-devel
+yum install libXpm-devel 
+yum install libXp-devel
+yum install libXmu-devel
+yum install libXaw-devel
+yum install libSM-devel
+yum install libICE-devel
+yum install lesstif-devel 
+yum install lapack-devel
+yum install lapack
+yum install imake
+yum install cernlib-devel
+yum --releasever=14 --skip-broken --nogpgcheck install cernlib-devel
+yum --releasever=14 --skip-broken --nogpgcheck install cernlib
+yum --releasever=14 --skip-broken --nogpgcheck install cernlib-g77
+
+Repeat these installations and check whether there are any missing package.
+If errors, first of all, please install
+
+yum install xbae-devel
+
+Now you can see installed cernlib from
+/usr/lib/cernlib/2006/lib
+/usr/lib/cernlib/2006-g77/lib
+
+At /usr/lib/cernlib/2006/lib
+check whether you have 16 *.so files in /usr/lib64/cernlib/2006/lib
+
+At /usr/lib/cernlib/2006-g77/lib
+Make 16 *.so files in /usr/lib/cernlib/2006-g77/lib
+by re-linking with a following command repeatly:
+ln -s A.so.B.2006 A.so
+Here, A is a file name in the directory, and B is 1, 2 or 3.
+Example, A = libcojets, B = 2
+
+
+cernlib
+cernlib-devel
+cernlib-g77
+cernlib-utils
+
+

@@ -1,0 +1,241 @@
+IRAF ccmap image wcs registration: RupV30 frame
+
+ccmap allows mapping world co-ordinate systems (ie celestial coords) to image pixel coords. This is an iterative process, one must have a rough estimate to start.
+
+Working directory: ast355$/assign2/V30/
+Image file: Rup7V30.fits
+
+1) verify RA & DEC fits headers
+cl> hselect Rup7V30.fits ra,dec yes
+
+2) display image in ds9:
+cl> display Rup7V30.fits frame=1
+
+3) display matching sky survey image with ds9. We need an estimate of field-of-view of our image (eg. pixel scale * number of pixels).
+From ds9  "Analysis" menu choose "Image Servers" then "Digital Sky Survey (DSS)"
+Enter RA (alpha) & DEC (delta) co-ordinates from image header keywords. Set DSS image dimenisons to ~120% of your image frame size.
+
+4) Use ds9 "Edit" -> "Rotate" option to rotate image to align with frame.
+You may have to choose new celestial co-oridinates for the DSS image to match your frame.
+
+5) Use the DSS image to estimate celestial co-ordinates for five stars in your image. Save the results to a text file with the following format (eg. Rup7V30-wcs.txt):
+#x      y       ra               dec
+443  374  06:57:53.6  -13:11:50
+212  265  06:57:50.2  -13:13:40
+389  46    06:57:43.0  -13:12:17
+171  401  06:57:54.5  -13:13:58
+302 374   06:57:53.6  -13:13:57
+
+
+6) Use ccmap for initial coordinate mapping function. ccmap task well add keywords to the header of our image.
+make a backup copy of our fits image:
+cl> cp Rup7V30.fits Rup7V30.fits.BAK
+
+images.imcoords.ccmap
+ccmap.input="Rup7V30-wcs.txt"
+ccmap.database="ccmap.db"
+ccmap.images="Rup7V30.fits"
+ccmap.results="ccmap.out"
+ccmap.xcolumn=1
+ccmap.ycolumn=2
+ccmap.lngcolumn=3
+ccmap.latcolumn=4
+ccmap.insystem="j2000"
+ccmap.refpoint="coords"
+ccmap.update="yes
+ccmap.interactive="no"
+
+imcoords> ccmap
+
+
+7) Using our initial transform map, we can find reference stars from an astrometric catalog.
+
+We will use the agetcat task to download positions of stars in our frame. We only need approx. 10 stars, so we will filter the catalog to use only bright stars.
+noao.astcat.agetcat
+agetcat.regions="Rup7V30.fits"
+agetcat.output="Rup7V30.astcat.1"
+agetcat.cataolg="usno2@noao"
+
+Run agetcat task with command-line filtering:
+astcat> agetcat filter=yes fsort="mag1" fexpr="mag1 <= 15.0"
+
+8) Use msctpeak task to interactively align the catalog stars in our image frame. This will improve our coordinate mapping function.
+
+The msctpeak task is part of the mosaic ccd reduction package (mscred), but also works for a single images. msctpeak task is based on obsolete tpeak task (from obsolete tfinder package). msctpeak is under the mscfinder package. There is no help page for the msctpeak task. However, there is an interactive ":help" command. Below is included the tpeak help page for the related (obsolete) tfinder package. See Valdes mosaic world coordiante system webpage for more information.
+
+msctpeak uses the ccmap task interactively. You should review the ccmap interactive keystroke commands.
+
+mscred.mscfinder.msctpeak
+msctpeak.images="Rup7V30.fits"
+msctpeak.coordinates="Rup7V30.astcat.1"
+msctpeak.database="msctpeak.db"
+msctpeak.epoch="2000."
+msctpeak.update="yes"
+msctpeak.interactive="yes"
+
+msctpeak uses the display, so first display image in ds9.
+msctpeak will update headers in our image fits file, so you may want to make a backup copy before running the task.
+
+mscfinder> display Rup7V30.fits frame=1
+
+msctpeak interactive commands (see tpeak help page):
+[l] key is described as "Center the source(s) shifted to the cursor, using two keystrokes"
+- center point on red circle
+- first [l] key selects source marker (red circle) closest to pointer
+- move pointer to star in frame matching red circle
+- second [l] key press selects pixel coordinates at the pointer
+[r] key refresh image in ds9
+[f] fit sources to pixels, this will start the ccmap task interactively, press [q] to quit ccmap and return to msctpeak task
+
+Once you are satsified with the fits, press [q] key to quit msctpeak task. The file "msctpeak.db" will hold the "plate solution" used.
+We can also examine the headers added to our image fits file:
+cl> hselect Rup7V30.fits "crval[1-2],crpix[1-2],cd[1-2]_[1-2] " yes
+
+9) Display our image frame and over plot the reference stars. Use our wcs coordinate mapping to find the pixel coordinates for the reference stars.
+Use the iraf fields task to extract columns from the astrometry catalog. We pipe (|) these columns to the cctran task which translates the celestial coordinates to pixel coordinates.
+The display task tvmark uses pixel coordinates for plotting, it does not understand celestial coordinates. We use the msctpeak.db "plate solution" to provide the equation coefficients.
+
+cl> display Rup7V30.fits frame=1
+cl> fields Rup7V30.astcat.1 1,2 | cctran STDIN STDOUT msctpeak.db Rup7V30.fits forward=no | tvmark 1 STDIN
+
+
+10) Transform daofind output to wcs celestial coordinates
+Pipe the columns to cctran task to transform.
+
+cl> fields Rup7V30.coo.1 1,2 | cctran STDIN STDOUT msctpeak.db Rup7V30.fits forward=yes
+
+
+
+                            TPEAK Commands
+                             --------------
+
+                        Cursor Keystroke Summary
+
+                  "good" = centered, "bad" = uncentered
+
+ a All source toggle                     j Center from the current coords
+ b Redisplay only bad sources            k Center with one keystroke
+ c Recenter good sources                 l Center with two keystrokes
+ d Delete source(s)                      o Overlay the raw coordinates
+ f Fit good sources, reposition bad      r Redisplay good and bad sources
+ g Redisplay only good sources           u Undelete source(s)
+ i Initialize to the raw coordinates
+
+ q Exit the task                         ? Get this help
+
+
+                          Colon Command Summary
+
+            autodisplay    badcolor     boxsize        eparam
+            goodcolor      marker       omarker        replace
+            rotate         scale        shift          show
+            subsample      update
+
+
+                        Cursor Keystroke Commands
+
+ a  All source toggle for d/i/j/k/l/u keys.  Entering `a' before one of
+    these keystrokes will make the action apply either to all sources for
+    d[elete] or u[ndelete], or to all currently uncentered (bad) sources
+    for i[nitialize] and the three centering keys:  `j', `k', or `l'.
+
+ b  Redisplay only the bad (uncentered) sources.
+ c  Recenter the list of sources with good (previously centered) positions.
+ d  Delete the source(s).  (Mark as uncentered.)
+ f  Fit good source list, reposition uncentered sources to match.
+    If ":update" is "yes", write the resulting world coordinate system
+    (WCS) into the input image header.
+ g  Redisplay only the good (centered) sources.
+ i  Initialize the source(s) to their raw coordinates.
+
+ j  Center the source(s) at the current coordinates.
+ k  Center the source(s) shifted to the cursor, using one keystroke.
+ l  Center the source(s) shifted to the cursor, using two keystrokes.
+
+    The `l' key allows an initial source selection keystroke for
+    crowded fields (first 'l' selects source marker, second 'l'
+    selects pixel coordinates).  The `k' key selects and shifts
+    using only one cursor position (nearest marker to pixel).
+    The `j' key only uses the cursor position for selecting the
+    source marker to be centered from the catalog coordinates.
+
+ o  Overlay the raw catalog coordinates using the omarker and the badcolor.
+ q  Exit the task.
+ r  Redisplay both the good and bad (centered and uncentered) sources.
+ u  Undelete the source(s).  (Mark as centered - no further centering done.)
+ ?  Get this help.
+
+
+
+                        Colon Commands
+
+Issue a command with an argument of the specified type to set the
+corresponding value, or with no argument to print the current setting.
+Commands and arguments may be abbreviated.
+
+ :autodisplay   [y/n]   Redisplay automatically after "all source" command?
+ :boxsize       [int]   Centering box fullwidth
+ :show          [file]  List plate, region and coordinate info [to a file]
+ :subsample     [int]   Overlay subsampling factor for display only
+
+ :badcolor      [str]   Color for bad (uncentered) positions
+ :goodcolor     [str]   Color for good (centered) positions
+ :marker        [str]   Marker for current positions
+ :omarker       [str]   Marker for initial positions
+
+                Colors:   [black|white|red|green|blue|yellow]
+                Markers:  [point|circle|cross|plus|rectangle]
+The "f" keystroke will perform a plate solution using the current list
+of centered catalog sources.  This plate solution will be used to calculate
+the celestial coordinates for the program object list, but can also
+optionally be used to update the world coordinate system (WCS) in the
+image header.  The WCS information can be used by a variety of IRAF tasks.
+If ":update" is yes, the image header WCS will be updated following the
+next fit.  If ":update" is no, the WCS will not be updated.
+
+ :update        [y/n]   Update input image WCS after next fit?
+
+
+The catalog sources (not program objects) can be repositioned from the
+current coordinates by specifying a relative shift in each axis or a
+rotation or percent scaling factor(s) that will be applied to all catalog
+sources relative to the center of the frame.  If only one argument is
+specified to :scale, both coordinates are rescaled by the same factor.
+
+Note that each time rotate, scale or shift is specified, the coordinates
+will be recomputed relative to the current coordinates, centered or not.
+These commands will often best be applied to the original predicted
+coordinates immediately after entering the task or after reinitializing
+the coordinates using the "a" and "i" keystrokes.  No centering is
+performed following these commands, and the catalog sources will be
+marked as uncentered afterwards.
+
+ :rotate        [real]  Angle relative to current coordinates
+ :scale [x [y]] [real]  Percent scale factor (can specify each axis)
+ :shift [x y]   [int]   X,Y shifts relative to current coordinates
+
+Special circumstances may benefit from updating the original predicted
+coordinates provided by TFIELD.  The :replace command will reset these
+coordinates to the current coordinates.  This operation should not
+normally need to be performed.
+
+ :replace               Replace the predicted coords with the current coords
+
+Note that the "predicted" program object coordinates will be updated also.
+Various parameters from the various tasks called by TPEAK may be adjusted
+to tweak the behavior of the task:
+
+ :eparam        [task]  Edit parameters for DISPLAY, IMCENTROID,
+                        SELECTPARS, TPLTSOL or TVMARK
+
+All the parameters of DISPLAY are adjustable (excluding the image name
+and frame number which are set by TPEAK) and most of the parameters of
+TVMARK are adjustable.  This allows control over the appearance of the
+display.  The IMCENTROID parameters can be tweaked to refine the
+centering algorithm and the TPLTSOL parameters to refine the interactive
+coordinate fitting algorithm.
+
+One useful technique is to set tvmark.outimage before redisplaying the
+good (and/or bad) sources for the last time (reset tvmark.outimage
+before exiting the task).  This provides a snapshot of the overlayed
+sources suitable for hardcopy.

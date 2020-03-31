@@ -1,0 +1,76 @@
+0. gather files Calibrated*.fits (cosmic-ray + astrometry) : observatory and filter
+
+1. make reference image : ref.fits
+	1-1. take images, more than 5 : ref.list
+	1-2. copy one image to ref.fits
+	1-3. remap ref.list
+	1-4. remove ref.fits 
+	1-5. edit ref.list from "Calibrated~~.fits" to "reCalibrated~~.fits" 
+	1-6. combine to ref.fits
+		python /mypy/iraf-imcombine.py ref.list ref.fits
+
+2. remap with ref.fits  : remap.py, alipy-gregister-sample.py
+
+	python /mypy/remap.py 
+
+	python /mypy/alipy-gregister-sample.py
+
+3. imcombine : imagecombine.py
+	python /mypy/imagecombine.py
+
+4. convolution and subtraction : hotpantsrun.py
+	python /mypy/hotpantsrun.py
+
+5. photometry
+
+	
+
+
+swarp -c ../../default.swarp doaoref.fits -IMAGEOUT_NAME outref.fits -PIXELSCALE_TYPE MANUAL -PIXEL_SCALE 2.0609
+
+
+python /mypy/remap.py 
+python /mypy/imagecombine.py 
+python /mypy/hotpantsrun.py
+python /mypy/iraf-imcopy.py [200:*,200:*]
+
+
+pixscale= 0.463073   # DOAO
+pixscale= 2.0609   # CCA250
+pixsca1e= 1.35398  # 30inch
+pixscale= 0.795703 # LOAO
+pixscale= 0.214767 # Maidanak_FLI
+pixscale= 0.440478 # SOAO_FLI_4k
+
+
+ls Cal*.fits > ref.list
+vi ref.list
+cat ref.list
+cp Calibrated-LOAO-NGC3938-20170515-062421-B-60.fits ref.fits
+python /mypy/remap.py ref.list 0.214767
+
+python /mypy/alipy-gregister-sample.py
+ls reCalibrated*.fits > ref.list
+rm ref.fits
+python /mypy/iraf-imcombine.py ref.list ref.fits
+
+ls Calib*.fits > obj.list
+python /mypy/remap.py obj.list 0.214767
+
+python /mypy/imagecombine.py
+# python /mypy/alipy-gregister-sample.py # change images_to_align
+
+
+ls reCal*.fits > obj.list
+python /mypy/hotpantsrun.py obj.list ref.fits
+
+#ls re*.fits > obj.list
+#python /mypy/psfexrun.py obj.list
+
+#python /mypy/psfmatch.py
+
+
+
+
+
+

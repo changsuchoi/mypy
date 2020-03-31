@@ -1,0 +1,39 @@
+rpmbuild --clean --rebuild cernlib-2006-35.fc14.src.rpm
+rpmbuild --clean --rebuild --target noarch cernlib-2006-35.fc14.src.rpm
+
+ 
+ 
+/usr/src/packages/RPMS
+  
+  
+혹시 의존성이 걸려 있다면 필요한 패키지가 출력되면서 컴파일이 중단됩니다.
+이 경우 필요한 패키지를 다운받아 설치한 후 다시 컴파일 해 주어야 합니다.
+
+컴파일이 성공하면 /usr/src/packages/RPMS 에 자신의 머신에 맞는 폴더에 바이너리 rpm이 생성됩니다.
+
+/root/rpmbuild/BUILD/cernlib-2006/2006/
+
+보통 i586이나 i686 디렉토리에 생성됩니다.
+
+
+특정 플렛폼에 맞는 rpm을 만들고 싶다면 --target <PLATFORM> 옵션을 추가하면 됩니다.
+<PLATFORM>은 i386, i486, i586, i686, athlon, noarch 중 하나를 선택하면 됩니다.
+
+athlon은 64비트 컴파일시 사용됩니다.
+AMD의 최초의 x86용 64비트 CPU의 코드명입니다. 
+
+noarch는 플렛폼에 무관한 rpm을 생성합니다.
+noarch는 주로 데이타 rpm에 사용되며 실행프로그램이라면 ix86이나 athlon을 선택하면 됩니다.
+
+예를 들어 SuperKaramba를 486용으로 컴파일하고 싶다면 다음과 같이 표현할 수 있습니다.
+
+# rpmbuild --clean --rebuild --target i486 superkaramba-0.39-2.guru.suse102.src.rpm
+
+그러면 /usr/src/packages/RPMS/i486 디렉토리에 바이너리 rpm이 생성됩니다.
+
+  
+[changsu@localhost Downloads]$ uname -m
+x86_64
+
+
+

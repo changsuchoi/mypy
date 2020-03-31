@@ -1,0 +1,71 @@
+https://swift.gsfc.nasa.gov/analysis/threads/uvot_thread_aperture.html
+
+
+UVOT Aperture Correction
+Overview:
+Aperture correction is essential to obtain correct UVOT magnitudes. This thread describes how to perform aperture corrected photmetry on sources in UVOT images.
+
+Read this thread if you want to: Perform UVOT aperture corretions.
+
+Last update: January 19, 2010
+
+1. Choose a Photometry Aperture Radius:
+The optimal aperture radius for doing photometry on a point source depends on the shape and width of the point-spread function (PSF), on the degree of crowding in the field, and on the desired science. Usually it is desirable to maximize the signal-to-noise ratio of the source in order to obtain the most precise photometry. Stellar sources have PSFs that can be approximated by a Moffat function. For a Moffat function the signal-to-noise ratio is maximized when the aperture radius is approximately equal to the full-width at half maximum (FWHM) of the PSF. The FWHM of point sources in the UVOT filters, as of 2008-07-18, is approximately 2.5 arcseconds. We recommend using this value for all UVOT data at all times unless if you have determined a value specific to your data.
+
+Since a Moffat function is only an approximation to the true shape of the PSF setting the aperture radius to 2.5 arcseconds will yield an approximately maximal signal-to-noise ratio. However, experience has shown that the optimum aperture for UVOT images is a bit larger than this. We recommend an aperture radius of 3 arcseconds, although users may wish to experiment to determine the best aperture size for their purposes. This aperture is significantly smaller than the size of the coincidence loss region (a circle with a radius of 5 arcseconds).
+
+For isolated sources with count rates less than approximately 10 counts per second (V ≈ 15.4 mag) coincidence losses are negligible, so using a photometry aperture with a radius of less than 5 arcseconds will not have a significant affect on the photometry. For isolated sources with count rates greater than approximately 10 counts per second, however, the coincidence correction will not be properly taken into account. This can be overcome by selecting aperture correction stars that have similar magnitudes to the source that is being photometered. If this is done the coincidence correction will be included in the aperture correction. For crowded sources the coincidence corrections in the aperture corrections will not cancel those in the small radius aperture. We have no recommendation what to do it this case.
+
+2. Choose a Background Region:
+The background region needs to be chosen carefully. At present "uvotsource" takes the background to be the mean counts per pixel in the background region and does not deal with contamination from sources that fall in the background region. Therefore, the user must select a background region that does not include any sources, or is large enough that contaminating sources do not contribute significantly to the mean count rate in the region.
+
+If the background does not vary over the UVOT field of view one can select any background region that is not contaminated by sources. If the background does vary over the UVOT field of view then the background region must be selected so that the properties of the background region are the same as the those of the background at the location of the source.
+
+The UVOT Team recommends using a background region that is an annulus centred on the source with an inner radius of 27.5 arcseconds and a width of 7.5 arcseconds. This annulus needs to be adjusted so that there are no sources in it. If there are sources in it adjust the width and inner radius. The inner radius should never be smaller than 15 arcseconds. If no suitable annulus can be found use a circle with a radius of at least 5 arcseconds. Position this circle so that no part of it is nearer than 15 arcsec from the source. When choosing a background region the most important criterion is that the background in the background region closely matches the background that the source is sitting on.
+
+3. Do Photometry:
+Users interested in making approximate aperture corrections (i.e., using the automated method) may use the task "uvotapercorr", which is distributed with HEASOFT, to estimate the aperture correction for a source. This tasks uses the mean PSF for a filter to estimate the aperture correction. It ignores the various variations in the PSF, so it should not be used to obtain high-precision photometry. The systematic errors between the aperture corrections computed by "uvotapercorr" and the more accurate method outlined below have not been quantified. The UVOT Team believes that they are approximately 0.02 to 0.05 mag. The "uvotsource" task can apply these approximate aperture corrections by specifying "apercorr=CURVEOFGROWTH" when running the task.
+
+If you have reason to believe that the automated aperture corrections are not valid for your data you can perform manual aperture corrections as described below. To do this first do photometry using "uvotsource" with apercorr=NONE.
+
+4. Perform Maunal Aperture Corrections:
+This section describes manual aperture corrections. It can be skipped if you use the automated aperture corrections.
+
+Once one has an aperture magnitude in the user-defined aperture one needs to apply an aperture correction to transfer this magnitude to the standard photometry aperture that was used to obtain the photometric zero point. The aperture correction is the difference between the magnitude measured in the user's R arcsecond aperture and the magnitude that is obtained in the standard photometric aperture (currently 5 arcseconds). The standard photometric aperture radii for each UVOT filter are:
+
+Radius (arcsec)
+Filter
+V	5
+B	5
+U	5
+UVW1	5
+UVM2	5
+UVW2	5
+White	5
+These are the only aperture radii that the photometric zero points are valid for.
+
+First, identify several isolated point sources that can be used to obtain aperture corrections. These must be point sources. Do not use extended sources. The aperture correction stars should be bright enough that they have a high signal-to-noise. They should have no sources within 10 (2 × 5) arcseconds.
+
+Second, select background regions for each aperture correction star. Try to keep the area of each background region the same as the area of the background region used to photometer the original source.
+
+Third, do aperture photometry on each star using the user-defined aperture. Repeat the photometry using the standard (5 arcsecond) aperture. Take the difference between the two magnitudes.
+
+dMag = Mag(5) − Mag(R)
+
+Take the weighted mean of the dMag values. This is the aperture correction. It may be necessary to discard some of the dMag values if they are badly discrepant from the typical value. This may occur because of contamination, or if the source was not a point source. Determine the error in the aperture correction by computing the RMS residual between the weighted mean dMag and the individual dMag values.
+
+Finally, add dMag to the magnitude measured in the user's (R arcsecond) aperture.
+Mag(corrected) = Mag(in user's aperture) + dMag
+
+Add in quadrature the error in the aperture correction to the error in the user-aperture magnitude.
+
+5. Things to Consider:
+There are systematic problems to be aware of when determining an aperture correction.
+
+First, the aperture correction depends on the filter. Separate aperture corrections must be computed for each filter.
+
+Second, the FWHM of the PSF is dependent on the temperature, and thus the orbital location of Swift when the exposure was taken. This has significant impact across a typical orbit where the temperature gradient caused by sunlight results in some non-neglible variation of the PSF, and thus the aperture correction. Currently this variation has not been well-characterized. Until this occurs we recomment that a user compute a separate aperture correction for each exposure. These variations are ignored by the automated aperture corrections, which introduces a small, poorly understood systematic uncertainty of a few percent in the photometry.
+
+Another systematic to be aware of is that the PSF is a function of count rate. Significant photon coincidence losses will result in flatter PSFs. A detailed characterization of this effect is pending, but it will result in bright sources having different aperture corrections from faint sources. This effect is small, except for the brightest sources, but it is currently not well characterized. For high-precision photometry we recommend that an aperture correction be computed from sources with V-band magnitudes less than approximately 15, and a separate aperture correction be computed for brighter sources.
+
+Aperture corrections will usually fail if a source exhibits significant mod-8 noise.

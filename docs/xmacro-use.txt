@@ -1,0 +1,13 @@
+# xmacro usage for mouse & keyboard macro work
+
+# sudo apt install xmacro
+
+# xmacrorec2 > macrofile.txt
+press ESC for begin and end of work
+macrofile.txt 
+
+# xmacroplay -d 300 "$DISPLAY" < macrofile.txt
+time delay 300ms and work just for once
+
+# for (( i=0; i<100 ; i++ )); do   xmacroplay -d 300 "$DISPLAY" < macrofile.txt ; done
+work for 100 loop

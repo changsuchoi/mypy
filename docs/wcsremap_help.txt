@@ -1,0 +1,39 @@
+WCSremap
+
+This package is designed to astrometrically align one input image with another. The mapping is derived from WCS-format information assumed to be in each image's FITS header. This is very similar to the SWARP package, but with a variety of changes and (dare I say) improvements.
+Description
+
+The first step in the process of difference imaging is to astrometrically align two input images. This should ensure that a given astronomical object is centered at the same pixel in both images. The WCS-format astrometric distortions in the input images should model the distortions in the focal plane to as high order as possible. Any inaccuracies in this distortion model will result in mis-aligned images, which in turn will effect the quality of their difference image.
+
+In practice, a template reference image is chosen which defines an astrometric reference region. An input image is chosen whose pixels will be resampled to land in the template astrometric frame. The output image will be the exact same size as the template reference image, padded with zero-valued pixels if necessary. Because of this resampling process, the flux and noise in the output image will be correlated pixel-to-pixel, thus its important to propagate the variance in the image. To this end, an input noise image may be sent to the code, and an output noise image may be delivered from the code. If an output noise image is requested but an input noise image is not provided, the input science image (including its gain and readnoise) will be used to derive the variance image.
+
+As a rule of thumb, the input image to be remapped tends to be the template image for difference imaging. This is because the diffim templates ideally come from an image co-addition process, where the noise has been reduced by N . You are therefore less sensitive to losing noise in the covariance terms due to the convolution. It also keeps your input science image pristine. You want to keep the pixels in your science image as untouched as possible.
+
+In general, input images have associated bad pixel mask images. These bad pixels are also convolved in the astrometric resampling. If an input mask image is provided to the code, it will keep track of what kind of input pixels land in an output pixel, and deliver an output mask image if requested. The code assumes the following for mask images :
+    #define MASK_BADPIX 0x01 /* 1 */ 
+    #define MASK_SATUR 0x02 /* 2 */ 
+    #define MASK_OUTOFRANGE 0x04 /* 4 */ 
+    #define MASK_CORE_SATSTAR 0x10 /* 16 */ 
+    #define MASK_SPIKES 0x20 /* 32 */ 
+    #define MASK_SPREAD_OK 0x40 /* 64 */ 
+    #define MASK_BAD 0x80 /* 128 */
+
+    In particular, it expects bad input pixels to satisfy pixel & MASK_BADPIX, and bad output pixels satisfy pixel & MASK_BAD. The reasons for the pixel being bad on input (MASK_SATUR, MASK_OUTOFRANGE, MASK_CORE_SATSTAR, MASK_SPIKES) may also be included in the input mask image. If an output pixel receives a small fraction of its flux from bad input pixels (in particular, <1% of the resampling kernel), it will recive an output flag of MASK_SPREAD_OK. If it receives a large fraction of its flux from bad pixels (>1% of the convolution kernel) it will receive an output flag of MASK_BAD.
+
+    So, for each output pixel x, its position on the sky is determined using the equivalent of –––––––––––radec = xy2sky x . This sky position is then determined on the input image using y = sky2xy –––––––––––– radec . At each position y, an interpolation function ki(y)=h(y–yi) is defined. I use by default a Lanczos4 kernel of the form
+    h(y)=2d=1sinc(yd)sinc(4yd) 
+    with –4yd4. The flux, variance, and mask are propagated using
+    f(y)=k(y)f
+    v(y)=k(y)2v
+    m(y)=(y–yi)  m
+
+    Use Cases
+
+    The most basic use case is as follows :
+    wcsremap -template template.fits -source input.fits -outIm input_remapped.fits
+
+    In this case, template.fits contains in its FITS header the astrometric reference frame into which input.fits will be remapped.
+
+    To propagate an input mask and noise image, you would say
+
+    wcsremap -template template.fits -source input.fits -noiseIn input_noise.fits -maskIn input_mask.fits -outIm input_remapped.fits -outNoise input_noise_remapped.fits -outMask input_mask_remapped.fits

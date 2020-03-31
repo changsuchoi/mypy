@@ -1,0 +1,34 @@
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+
+# User specific aliases and functions
+
+# added by Anaconda2 4.4.0 installer
+export PATH="/home/changsu/anaconda2/bin:$PATH"
+# wcstools
+export PATH="/home/changsu/util/wcstools-3.9.5/bin:$PATH"
+# astrometry.net 0.70
+export PATH=${PATH}:/usr/local/astrometry/bin
+# aladin
+alias aladin='sh /home/changsu/util/Aladin &'
+# starlink
+STARLINK_DIR=/home/changsu/util/star-2016A
+source /home/changsu/util/star-2016A/etc/profile
+# ds9 device
+export IMTDEV=inet:5137
+# GDL PATH
+export GDL_STARTUP=~/.gdl/gdl-startup.pro
+
+
+
+# Add iraf setup commands
+if [ -e /home/changsu/.iraf/setup.sh ]; then
+    source /home/changsu/.iraf/setup.sh
+fi

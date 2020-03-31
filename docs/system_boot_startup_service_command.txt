@@ -1,0 +1,3 @@
+[changsu@localhost ~]$ sudo systemctl enable docker
+ln -s '/usr/lib/systemd/system/docker.service' '/etc/systemd/system/multi-user.target.wants/docker.service'
+[changsu@localhost ~]$ sudo chkconfig docker on

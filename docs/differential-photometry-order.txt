@@ -1,0 +1,80 @@
+* 0. reference image
+	make ref directory and ref.list for candidate images
+	sellection : large zeropint values, smaller FWHMs, more stars, early epoch, no specific transient 
+	alignment :  gregister
+	median combine (image # > 5)
+	fwhm-zp.py
+
+* 1. input information (header)
+	image name 
+	filter 
+	date-obs(JD) 
+	object(target) ra, dec
+	comparison stars
+	exposure time
+	pixscale
+	FOV
+	gain, readout noise
+	astrometry
+
+% 1.1	image combine for each epoch 
+	align : reference image , wcs - astrometry, pixel - gregister
+	gregister.py
+	combine : median combine, change date-obs and file name.
+	iraf-imcombine.py
+	imagecombine.py
+
+1.2 registeration and image combination then subtraction
+	gregister, imagecombine (DATE-OBS change), hotpants
+
+% 2. reference catalog
+	APASS(BVgri), SDSS(ugriz), Pan-starrs(grizY)
+	magnitude conversion (Lupton 2005, Chonis&Gaskell 2008)
+	magnitude cut
+	sdss-BVRI-conv-Chonis+Gaskell2008.py
+
+
+% 3. instrument magnitude - source extractor
+	* dual mode, assoc mode
+	default.sex default.param, default.conv, default.nnw
+	threshold
+	min area
+	aperture
+	pixscale
+	seeing
+	backfiltersize
+	check image : segment, obj ...
+	sigma_sky : background extimate
+	zeropoint.py
+	
+% 4. merge reference cat and sextractor catalog (matching)
+	stilts (starlink) 
+	option : format, join, find, maxerror	
+	
+% 5. zero point calculation from merged catalog
+	mag cut : 12, 14 - 17, 19
+	stellarity :  > 0.8
+	flag : 0
+	error cut : < 0.1 (ref, instrument) 
+	aperture(3,5,7), auto, psf (PSFex) decision
+	robust statstistics (min # > 5)
+	plot image (comparison stars)
+	plot mag-mag plot 
+	print mid-results
+	Limit mag : 
+		sigma_sky : backgroud estimate
+		Limit mag = zp - 2.5 * log(N * sigma_sky * sqrt(pi * R^2))
+		N = 3 sigma or 5 sigma (3, 5)
+		R = radius of aperture (3" - 1.5")
+5.1 chech the calibrated magnitudes of comparison stars using zero point
+	plot reference mag - calibrated mag 
+	choose good comparison difference < zeropoint error
+
+6. find target instrument mag , error calculation
+	check target mag and comparison mag together
+		systematic variance
+
+7. subtracted image
+	source extraction (dual mode)
+	find object and adjust zp from 5.
+ 

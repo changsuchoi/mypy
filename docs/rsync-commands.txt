@@ -1,0 +1,58 @@
+### /data0/sngal
+#rsync -av --delete -e ssh /data0/sngal/ changsu@qso.snu.ac.kr:/data3/IMSNG/sngal/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /data0/sngal/ changsu@qso.snu.ac.kr:/data3/IMSNG/sngal/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /data0/IMSNG/ changsu@qso.snu.ac.kr:/data3/IMSNG/IMSNG/
+
+### code
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /data0/code/ changsu@qso.snu.ac.kr:/data3/IMSNG/code/
+
+### itelescope LSGT and T21
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T52/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T52/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T17/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T17/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T30/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T30/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T27/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T27/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T31/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T31/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T21/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T21/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T14/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T14/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T16/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T16/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T18/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T18/
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/itelescope/T11/ changsu@qso.snu.ac.kr:/data3/IMSNG/itelescope/T11/
+
+### LOAO
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d2/LOAO/ changsu@qso.snu.ac.kr:/data3/IMSNG/LOAO/
+
+### DOAO
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d2/DOAO/ changsu@qso.snu.ac.kr:/data3/IMSNG/DOAO/
+
+### SOAO
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d4/SOAO/ changsu@qso.snu.ac.kr:/data3/IMSNG/SOAO/
+
+### 30inch
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d4/30INCH/ changsu@qso.snu.ac.kr:/data3/IMSNG/30INCH/
+#ssh="sshpass -p ehrtkwk1 ssh -l changsu"
+# sshpass -p 'myPassword' ssh username@server.example.com
+
+### CCA250
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d4/CCA250/ changsu@qso.snu.ac.kr:/data3/IMSNG/CCA250/
+
+### SQUEAN
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d1/SQUEAN/ changsu@qso.snu.ac.kr:/data3/IMSNG/SQUEAN/
+
+
+### Maidanak
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /d3/maidanak/FLI-red/2017/ changsu@qso.snu.ac.kr:/data3/IMSNG/Maidanak/FLI-red/2017/
+
+### code
+rsync -av --delete --rsh="sshpass -p ehrtkwk1 ssh -l changsu" /data0/code/ changsu@qso.snu.ac.kr:/data3/IMSNG/code/
+
+### ex) receiving from server LOAO, SOAO
+# rsync -av --rsh="sshpass -p ehrtkwk1 ssh -l changsu" changsu@qso.snu.ac.kr:/home/grb/LOAO/ /d2/LOAO/2017/
+# rsync -av --rsh="sshpass -p ehrtkwk1 ssh -l changsu" changsu@qso.snu.ac.kr:/home/grb/SOAO/ /d4/SOAO/
+
+# ssh="sshpass -p ehrtkwk1 ssh -l changsu"
+# sshpass -p 'myPassword' ssh username@server.example.com
+
+
+
+### after rsync, 
+sudo chmod 777 -R /data3/IMSNG

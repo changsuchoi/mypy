@@ -1,0 +1,91 @@
+# From
+# https://github.com/mommermi/2017Spring_Astroinformatics
+
+SCAMP
+The SCAMP software provides more flexibility in the registration process by allowing the user to select a calibration catalog and other settings. This document provides a quick introduction on how to use SCAMP, using the sample data provided with this repository.
+
+Image Preparation
+SCAMP requires some rough WCS information for each image, specifically the field center coordinates (in both pixel and sky coordinates) and the pixel scale. The sample data already have some WCS information, which are not very accurate, but good enough: there is an offset of about 11 arcminutes between the assumed and actual sky positions. Let's discuss the required FITS header keywords quickly for one of the sample images:
+
+CTYPE1 and CTYPE2: the projection type in RA (axis 1) and Dec (axis 2); we use gnomonic projection, hence: CTYPE1 = RA---TAN and CTYPE2 = DEC--TAN
+CRPIX1 and CRPIX2: the image coordinates of the reference point (usually the center of the field; for the sample data: (1015, 1015))
+CRVAL1 and CRVAL2: the sky coordinates of the reference point (we can use the RA and DEC values in the header converted into degrees: (120.676375, 56.50191666666667))
+CDX_Y: the CD matrix, defining image scale and rotation; in the case of the sample data, we assume no image rotation use:
+CD1_1 = -0.0001042: moving one pixel to the right in the image reduces RA by 0.375 arcsec (in degrees; moves westward)
+CD1_2 = 0: moving one pixel to the right does not change Dec
+CD2_1 = 0: moving one pixel up does not change RA
+CD2_2 = 0.0001042: moving one pixel up increases Dec by 0.375 arcsec
+In case these information were not present in the FITS header, you would have to implant them, e.g., using the scripts/implant_wcs.py script.
+
+Source Catalog Creation
+Before we can use SCAMP, we have to create a source catalog using Source Extractor with a specific set of settings in Source Extractor's configuration and parameter files. Create a configuration file with
+
+sextractor -d > config.sex
+and a parameter file with
+
+sextractor -dp > default.param
+The following fields have to be activated (uncommented) in the parameter file (default.param):
+
+XWIN_IMAGE, YWIN_IMAGE: use windowed centroid for target image position
+ERRAWIN_IMAGE, ERRBWIN_IMAGE, ERRTHETAWIN_IMAGE: use windowed error ellipse information
+FLUX_AUTO, FLUXERR_AUTO: use Kron-like photometry
+FLAGS: diagnostic field (optional)
+(or use the files provided in the /setup directory of this repository.)
+
+It is mandatory to write the resulting catalog into a LDAC file. This can be changed in the configuration file (config.sex), along with some other optional things that can be used to control the source properties for the extraction:
+
+CATALOG_TYPE FITS_LDAC: set the output file type to LDAC (mandatory)
+FILTER N: deactivate detection filtering
+DETECT_MINAREA 10: minimum number of pixels above threshold
+DETECT_THRESH 5: detection threshold
+BACKPHOTO_TYPE LOCAL: use local sky background measurement (improves photometry results)
+Run Source Extractor on each of the images using:
+sextractor <filename>.fits -c config.sex -CATALOG_NAME <filename>.ldac
+The -CATALOG_NAME option overwrites the CATALOG_NAME setting in config.scamp. You can have a look at the LDAC catalogs using ldactoasc <filename>.ldac.
+
+Running SCAMP to Register the Images
+SCAMP has to be setup in a similar way as Source Extractor. Generate a SCAMP configuration file with
+
+scamp -d > config.scamp
+The most important parameters to change are:
+
+PIXSCALE_MAXERR: the maximum uncertainty on the image pixel scale (remember the CD matrix above)
+POSANGLE_MAXERR: the maximum uncertainty on the image rotation angle (as high as 180 degrees)
+POSITION_MAXERR: the maximum uncertainty on the image position (remember CRVAL; set this to 15)
+MATCH_FLIPPED: set to Y if you are really unsure about the image rotation
+ASTREF_CATALOG: catalog to use for astrometric calibration (use 2MASS for now)
+Running SCAMP is then as simple as:
+
+scamp *.ldac -c config.scamp
+SCAMP actually runs on the LDAC catalogs and not the image files; you can run it over all catalogs at a time. If SCAMP succeeds registering the images, it will create a .head file for each catalog and a number of diagnostic plots.
+
+You can tell if SCAMP succeeded by checking the numbers displayed on the screen. Under the section Astrometric matching, you find two contrast numbers (cont.). If those numbers are greater than 2.5, the matching was successful. Also, the Astrometric stats (external) give you some idea of the positional uncertainties of each source (dAXIS1 and dAXIS2).
+
+Finally, we have to merge the information in the .head files with our FITS images. You can use the scripts/merge_headers.py script to do this.
+
+Once the WCS solution has been implanted, use DS9 to display one of the images and display the 2MASS catalog excerpt for this field (Analysis/Catalogs/Infrared/2MASS Point Sources). As you can see, the catalog positions match the locations of the stars in the image very well. One advantage of SCAMP is that it derives image distortion terms (e.g., as a result of the optical design) at the same time, making it very powerful and accurate.
+
+Image Co-Addition
+Image Co-addition, or stacking, is used to reduce the noise improve the signal-to-noise ratio of sources in the image. In an ideal world, combining 30 ten-second integrations has the same depth as a 300-second integration. Images are combined using average or median operations by matching pixels that correspond to the same position in the sky.
+
+Once our images are registered, co-adding them is really simple using SWARP. The advantage of SWARP compared to simple shift-and-rotate image matching is that it accounts for image distortions found by SCAMP. SWARP uses an interface similar to Source Extractor and SCAMP, meaning that all settings are done in a configuration file. We create a configuration file with
+
+swarp -d > config.swarp
+The most important settings are:
+
+IMAGEOUT_NAME: the output image name
+COMBINE_TYPE: the operation used in the image combination; we will use a MEDIAN combination
+CENTER_TYPE: ALL only uses that part of the sky that is shared by all input images; MOST uses that part of the sky that is sharded by most images
+We can use the default configurations (setup/config.swarp) to create a median combine of our sample data:
+
+swarp mscience0*fits -c config.swarp
+The resulting image, coadd.fits, is a combination of the individual frames in the restframe of the sky background, which is signficantly deeper than the individual frames and - more importantly - the bright asteroid is not present anymore in the combined image.
+
+Image Co-Addition in a Co-Moving Frame
+In the same way that we can combine the images in the restframe of the sky background, we can combine them in the moving frame of the asteroid. We just have to tell SWARP to shift the individual frames with respect to each other. The easiest way to do that is to change the FITS WCS information in such a way that we shift the sky reference position (CRVAL1 and CRVAL2) in accordance with the asteroid's track in the sky.
+
+You can use the scripts/move_frames.py script to change the sky reference position of the sample data frames. The shifted files end on _shifted.fits.
+
+This time we run SWARP on the shifted images and use a different filename for the final output:
+
+swarp mscience0*shifted.fits -c config.swarp -IMAGEOUT_NAME comove.fits

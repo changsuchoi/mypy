@@ -1,0 +1,127 @@
+Constructing galaxy model and subtracting it from the image.
+
+1. Cut out the image region around the target object
+ [e.g., at iraf, imcopy image.fits[4000:4500,3000:3800] r1.fits]
+
+2. In iraf go to stsdas, analysis, isophote, so that you can start ellipse.
+
+3. "epar geompar" --> Input the center coordinate of the host galaxy.
+
+    
+PACKAGE = isophote
+   TASK = geompar
+
+(x0     =                 172.) initial isophote center X
+(y0     =                 140.) initial isophote center Y
+(ellip0 =                  0.2) initial ellipticity
+(pa0    =                  20.) initial position angle (degrees)
+(sma0   =                  10.) initial semi-major axis lenght
+(minsma =                   0.) minimum semi-major axis lenght
+(maxsma =                 500.) maximum semi-major axis lenght
+(step   =                  0.1) sma step between successive ellipses
+(linear =                   no) linear sma step ?
+(maxrit =                INDEF) maximum sma lenght for iterative mode
+(recente=                  yes) allows finding routine to re-center x0-y0 ?
+(xylearn=                  yes) updates pset with new x0-y0 ?
+(physica=                  yes) physical coordinate system ?
+(mode   =                   al)
+
+
+4.  "epar samplepar" --> changes some of the seetings, expecially usclip to a lower value, and increase nclip to a larger number. Below is an example I used.
+
+                    Image Reduction and Analysis Facility
+PACKAGE = isophote
+   TASK = samplepar
+
+(integrm=            bi-linear) area integration mode
+(usclip =                   2.) sigma-clip criterion for upper deviant points
+(lsclip =                   3.) sigma-clip criterion for lower deviant points
+(nclip  =                    5) number of sigma-clip iterations
+(fflag  =                  0.5) acceptable fraction of flagged data points 
+(sdevice=                 none) graphics device for ploting intensity samples
+(tsample=                 none) tables with intensity samples
+(absangl=                  yes) sample angles refer to image coord. system ? 
+(harmoni=                 none) optional harmonic numbers to fit
+(mode   =                   al)
+
+5. "epar controlpar". Do not hold center nor ellpticity, position angle.
+
+   Image Reduction and Analysis Facility
+PACKAGE = isophote
+   TASK = controlpar
+
+(conver =                 0.05) convergency criterion (maximum harmonic amplitud
+(minit  =                   10) minimun no. of iterations at each sma
+(maxit  =                  120) maximun no. of iterations at each sma
+(hcenter=                   no) hold center fixed ?
+(hellip =                   no) hold ellipticity fixed ?
+(hpa    =                   no) hold position angle fixed ?
+(wander =                INDEF) maximum wander in successive isophote centers
+(maxgerr=                  0.5) maximum acceptable gradient relative error
+(olthres=                   1.) object locator's k-sigma threshold
+(soft   =                   no) soft stop ?
+(mode   =                   al)
+
+
+6. "epar ellipse". Define input image name and output table name accordingly.
+ 
+
+              Image Reduction and Analysis Facility
+PACKAGE = isophote
+   TASK = ellipse
+
+input   =                  r1  input image name
+output  =               r1out  output table name
+(dqf    =                 .c1h) data quality file name or extension 
+(inellip=                     ) table with input ellipses for no-fit mode
+(geompar=                     ) geometric parameters (pset)
+(control=                     ) algorithm control parameters (pset)
+(samplep=                     ) sampling control parameters (pset)
+(magpar =                     ) magnitude scale parameters (pset)
+(interac=                   no) interactive ?
+(device =                  red) graphics output device
+(icomman=                     ) image cursor
+(gcomman=                     ) graphics cursor
+(masksz =                    5) pixel square mask size (`m' cursor key)
+(region =                   no) region masking mode ?
+(memory =                  yes) memory-intensive (versus disk-intensive) ?
+(verbose=                  yes) list summary at STDOUT ?
+(mode   =                   al)
+
+
+7. Run ellipse! If it does not run, you may move the files to the iraf directory...
+
+8. "r1out.tab" is created at the step 7. Use it to create a galaxy model with bmodel
+   "epar bmodel"
+
+PACKAGE = isophote
+   TASK = bmodel
+
+table   =                r1out  isophote table
+output  =             r1_model  output (model) image
+(parent =                   r1) parent image
+(fulltab=                  yes) use full range of `SMA' from table ?
+(minsma =                   1.) minimum modelling SMA
+(maxsma =                   1.) maximum modelling SMA
+(backgr =                   0.) background value
+(interp =               spline) interpolation algorithm
+(highar =                   no) add higher harmonics ?
+(verbose=                   no) print info ?
+(mode   =                   al)
+
+9. The step 8 creates a galaxy model image, r1_model.fits. Subtract it from the original image.
+      "imarith r1.fits - r1_model.fits r1_diff.fits"
+      Then a difference image, r1_diff.fits is created.
+
+10. Perform the photometry on the r1_diff.fits with your favorate program!
+
+
+
+
+
+
+
+
+
+
+  

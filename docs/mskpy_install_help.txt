@@ -1,0 +1,17 @@
+# mskpy install
+
+1. iraf f77.sh trouble
+   #> export F77=/usr/bin/f77
+
+2. http://naif.jpl.nasa.gov/pub/naif/generic_kernels/
+   go to that page and download 3 kernels
+   naif.tls : ex) naif0011.tls
+   planets.bsp : ex) de435.bsp
+   pck.tpc : ex) pck00010tpc
+   
+   and save those files to
+   /home/changsu/data/kernels/
+   as naif.tls, planets.bsp, pck.tpc
+   
+3. run 
+   python setup.py install
