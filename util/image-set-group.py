@@ -6,7 +6,7 @@ import glob
 from astropy.time import Time
 
 
-files = glob.glob('Calib*0.fits')
+files = glob.glob('Calib*.fits')
 files.sort()
 
 obsdt=[]
@@ -74,7 +74,7 @@ for i in lines :
             identifications= identify_transform(ref_image, images_to_align, rad= 5, nb=500, verbose=False, visual=False)
             align_images(ref_image, identifications, iraf=True, outdir='alipy_out')
 os.system('mv alipy_out/* .')
-			
+
 '''
 
 #os.system('mv alipy_out/* .')
