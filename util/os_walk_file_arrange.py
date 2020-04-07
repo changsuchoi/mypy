@@ -113,6 +113,7 @@ for i in lines :
 	if 'CCA250' in i:
 		os.system('rename NGC3367-18 NGC3367-2018 '+i)
 		os.system('rename NGC3367-17 NGC3367-2017 '+i)  
+		os.system('rename Calibrated Calib '+i)
 		os.system('rename 0.0.fits 0.fits '+i) 
 		os.system('rename 00.fits .fits '+i) 
 		os.system('rename ..fits .fits '+i) 
