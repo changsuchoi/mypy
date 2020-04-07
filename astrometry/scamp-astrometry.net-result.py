@@ -4,6 +4,12 @@
 # header remove astrometry.net head and add scamp .head 2020.3.26 
 
 # To do : 
+=======
+# header remove astrometry.net head and add scamp .head 2020.3.26
+# refering to
+# https://github.com/mommermi/2017Spring_Astroinformatics
+# To do :
+>>>>>>> 3e7d4ffcc0d13cd2984f198d54c21b3a4b1a8626
 
 
 
