@@ -1,0 +1,38 @@
+
+1. file arrange and setup 
+	input : Calib*.fits
+	os_walk_file_arrange.py    # file arrange,
+	CCA250-duplicated.py       # remove duplicates 
+	DOAO                       # rename DOAO_FLI -> DOAO
+	image-set-group.py         # comfile.txt
+	setmjd.py                  # insert mjd header keyword 
+2. registration + combine
+	scamp + swarp : scamp_net.py (for astrometry.net result)   # saCalib*.fits
+	gregister + imcombine : alipy
+
+3. 1st phot
+	psfex : FWHM_PSFEX , psf file *.psf, snap-psf*.fits
+	source extractor : FWHM_SE (for aperture size) and auto mag zp
+	matching : python or stilts
+
+3.1 reference image
+
+3.2 reference catalog
+
+
+4. 2nd phot 
+	source extractor : optimal aperture (1.5 or 2.0 FHWM) zp, zperr, limit mag, limit mag err, skysig, skymed, # of comp stars
+	matching : python or stilts
+
+5. subtraction 
+	wcsremap : ref image for every input image
+	hotpants : 10arcmin cut image
+
+6. subtracted image photometry for transient object 
+	source extractor  : object, mag, err, limit mag, limit mag err
+
+
+
+
+
+
