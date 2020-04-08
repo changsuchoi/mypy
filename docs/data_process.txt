@@ -6,10 +6,15 @@
 	DOAO                       # rename DOAO_FLI -> DOAO
 	image-set-group.py         # comfile.txt
 	setmjd.py                  # insert mjd header keyword 
+	
 2. registration + combine
 	scamp + swarp : scamp_net.py (for astrometry.net result)   # saCalib*.fits
 	gregister + imcombine : alipy
-
+	iraf median combine for each epoch
+	swarp median combine for each epoch
+	
+2.1 cosmic ray removal for single image of an epoch	
+	
 3. 1st phot
 	psfex : FWHM_PSFEX , psf file *.psf, snap-psf*.fits
 	source extractor : FWHM_SE (for aperture size) and auto mag zp
