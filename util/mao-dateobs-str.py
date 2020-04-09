@@ -1,4 +1,5 @@
 import os
+import glob
 from astropy.io import fits
 
 files = glob.glob('Calib*.fits')
