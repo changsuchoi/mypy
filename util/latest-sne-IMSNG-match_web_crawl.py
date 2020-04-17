@@ -21,6 +21,13 @@ from astropy.coordinates import Angle
 from astropy.coordinates import ICRS
 from astropy.coordinates import SkyCoord
 import pandas as pd
+from datetime import datetime
+
+#datetime.today().strftime("%Y%m%d%H%M%S")    # YYYYmmddHHMMSS 형태의 시간 출력
+#datetime.today().strftime("%Y/%m/%d %H:%M:%S")  # YYYY/mm/dd HH:MM:SS 형태의 시간 출력
+today=datetime.today()
+today=datetime.today().strftime("%Y%m%d %H:%M:%S")[:8]
+print(today)
 
 
 radius=15.0  # 30 arcmin = 0.5 deg
@@ -35,8 +42,8 @@ imsnglist=ascii.read('/d0/IMSNG/target/alltarget.dat')
 
 
 
-url="http://www.RochesterAstronomy.org/snimages/sndateall.html" # sn date all
-# url='http://www.rochesterastronomy.org/snimages/sndate.html' # sndate
+#url="http://www.RochesterAstronomy.org/snimages/sndateall.html" # sn date all
+url='http://www.rochesterastronomy.org/snimages/sndate.html' # sndate
 
 print ('getting table data from web page from',url)
 response=requests.get(url)
@@ -53,24 +60,42 @@ latestsnelist = df
 
 
 
+if url=='http://www.RochesterAstronomy.org/snimages/sndateall.html' :
+	print ('sne.list file first ...')
 
-print ('sne.list file first ...')
-
-f=open('sne.list','w')
-f.write('#index	ra	dec\n')
-for i in range(len(latestsnelist)) :
-	if i==0 : pass
-	else :
+	f=open('sne.list','w')
+	f.write('#index	ra	dec\n')
+	for i in range(len(latestsnelist)) :
+		if i==0 : pass
+		else :
 		#snera=latestsnelist[i][0][:11]
-		snera=latestsnelist['R.A.'][i]
-		#snedec=latestsnelist[i][0][13:25]
-		snedec=latestsnelist['Decl.'][i]
-		tcoord=SkyCoord(snera,snedec,frame='icrs',unit=(u.hourangle,u.deg))
-		f.write(str(i)+'\t'+str(tcoord.ra.deg)+'\t'+str(tcoord.dec.deg)+'\n')
+			snera=latestsnelist['R.A.'][i]
+			#snedec=latestsnelist[i][0][13:25]
+			snedec=latestsnelist['Decl.'][i]
+			tcoord=SkyCoord(snera,snedec,frame='icrs',unit=(u.hourangle,u.deg))
+			f.write(str(i)+'\t'+str(tcoord.ra.deg)+'\t'+str(tcoord.dec.deg)+'\n')
 
-f.close()
-print('date up to',latestsnelist['Discovery date'][1])
-print ('sne.list is created')
+	f.close()
+	print('date up to',latestsnelist['Discovery date'][1])
+	print ('sne.list is created')
+
+if url=='http://www.rochesterastronomy.org/snimages/sndate.html' :
+	print ('sne.list file first ...')
+
+	f=open('sne.list','w')
+	f.write('#index	ra	dec\n')
+	for i in range(len(latestsnelist)) :
+			#snera=latestsnelist[i][0][:11]
+			snera=latestsnelist['R.A.'][i]
+			#snedec=latestsnelist[i][0][13:25]
+			snedec=latestsnelist['Decl.'][i]
+			tcoord=SkyCoord(snera,snedec,frame='icrs',unit=(u.hourangle,u.deg))
+			f.write(str(i)+'\t'+str(tcoord.ra.deg)+'\t'+str(tcoord.dec.deg)+'\n')
+
+	f.close()
+	print('date up to',latestsnelist['Discovery date'][1])
+	print ('sne.list is created')
+
 
 '''
 f=open('imsng.list','w')
@@ -91,7 +116,7 @@ print ('.\n.\n.\n.\n.\n')
 print ('Matching starts...')
 print ('.\n.\n.\n.\n.\n')
 
-matchcom="stilts tskymatch2 ifmt1=ascii find=all ifmt2=ascii in1=imsng.list in2=sne.list out=imsng-sne-matched.list ra1=ra dec1=dec ra2=ra dec2=dec error="+str(radius*60.)+" join=1and2 ofmt=ascii omode=out"
+# matchcom="stilts tskymatch2 ifmt1=ascii find=all ifmt2=ascii in1=imsng.list in2=sne.list out=imsng-sne-matched.list ra1=ra dec1=dec ra2=ra dec2=dec error="+str(radius*60.)+" join=1and2 ofmt=ascii omode=out"
 matchcom = 'java -jar /home/changsu/util/stilts.jar tskymatch2 ifmt1=ascii find=all ifmt2=ascii in1=imsng.list in2=sne.list out=imsng-sne-matched.list ra1=ra dec1=dec ra2=ra dec2=dec error='+str(radius*60.)+' join=1and2 ofmt=ascii omode=out'
 
 print (matchcom)
@@ -126,13 +151,13 @@ f.close()
 mat=ascii.read('matched.list')
 mat.sort('Discovery_JD')
 delim=','
-mat.write('matched_order.list',format='ascii.fixed_width',delimiter=delim,overwrite=True)
-mat.write('matched_order.list.csv',format='ascii',delimiter=delim,overwrite=True)
+mat.write('matched_order_'+today+'.list',format='ascii.fixed_width',delimiter=delim,overwrite=True)
+mat.write('matched_order_'+today+'.list.csv',format='ascii',delimiter=delim,overwrite=True)
 #mat.write('matched_order.list',format='ascii.fixed_width')
-print ('imsng-sne-matched.list & matched.list files are created')
+print ('imsng-sne-matched_'+today+'.list & matched_'+today+'.list files are created')
 print ('\a')
 
-os.system('pluma matched_order.list&')
+os.system('pluma matched_order_'+today+'.list&')
 
 
 
